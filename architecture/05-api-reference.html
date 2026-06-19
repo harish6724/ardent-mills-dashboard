@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API Reference — Ardent Mills Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0D1117;--surface:#161B22;--surface-2:#21262D;--border:#30363D;--text:#E6EDF3;--text-muted:#8B949E;--gold:#D4A017;--blue:#58A6FF;--green:#3FB950;--red:#F85149;--orange:#FFA657;--purple:#BC8CFF}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-height:100vh}
+nav{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:4px;padding:0 32px;height:52px}
+.nav-brand{display:flex;align-items:center;gap:8px;text-decoration:none;margin-right:20px}
+.nav-brand-icon{width:28px;height:28px}
+.nav-brand-text{font-size:14px;font-weight:700;color:var(--gold);white-space:nowrap}
+.nav-link{color:var(--text-muted);text-decoration:none;padding:5px 10px;border-radius:6px;font-size:12px;font-weight:500;transition:all 0.2s;white-space:nowrap}
+.nav-link:hover{color:var(--text);background:var(--surface-2)}
+.nav-link.active{color:var(--blue);background:rgba(88,166,255,0.1)}
+.nav-anim-badge{background:var(--gold);color:#000;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;margin-left:4px;vertical-align:middle}
+.nav-spacer{flex:1}
+.page-header{padding:40px 48px 32px;border-bottom:1px solid var(--border)}
+.page-eyebrow{color:var(--blue);font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;font-family:'Roboto Mono',monospace}
+.page-title{font-size:34px;font-weight:700;line-height:1.2;margin-bottom:8px}
+.page-sub{color:var(--text-muted);font-size:14px;line-height:1.7;max-width:700px}
+
+/* Layout: sidebar + content */
+.api-layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 148px)}
+
+.api-sidebar{background:var(--surface);border-right:1px solid var(--border);padding:24px 0;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto}
+.sidebar-section{margin-bottom:20px}
+.sidebar-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);padding:4px 20px;margin-bottom:6px}
+.sidebar-link{display:block;padding:6px 20px;font-size:12px;font-family:'Roboto Mono',monospace;color:var(--text-muted);text-decoration:none;cursor:pointer;transition:all 0.2s;border-left:2px solid transparent}
+.sidebar-link:hover{color:var(--text);background:var(--surface-2)}
+.sidebar-link.active{color:var(--blue);border-left-color:var(--blue);background:rgba(88,166,255,0.06)}
+.sidebar-method{font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;margin-right:6px;font-family:'Roboto Mono',monospace}
+.m-get{background:rgba(63,185,80,0.15);color:var(--green)}
+.m-post{background:rgba(88,166,255,0.15);color:var(--blue)}
+
+.api-content{padding:32px 48px}
+.section-title{font-size:18px;font-weight:600;margin:36px 0 20px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.section-title:first-child{margin-top:0}
+
+/* Endpoint card */
+.endpoint{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:20px;overflow:hidden;transition:border-color 0.2s}
+.endpoint:hover{border-color:var(--blue)}
+.endpoint-header{padding:16px 20px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none}
+.method{font-size:12px;font-weight:700;padding:3px 10px;border-radius:4px;font-family:'Roboto Mono',monospace;min-width:50px;text-align:center}
+.method-get{background:rgba(63,185,80,0.15);color:var(--green);border:1px solid rgba(63,185,80,0.3)}
+.path{font-family:'Roboto Mono',monospace;font-size:13px;color:var(--text);font-weight:500;flex:1}
+.path-param{color:var(--orange)}
+.ep-desc{font-size:12px;color:var(--text-muted);margin-left:auto;text-align:right;max-width:200px}
+.ep-body{padding:0 20px 20px;display:none}
+.ep-body.open{display:block}
+.ep-toggle{color:var(--text-muted);font-size:12px;transition:transform 0.2s;flex-shrink:0}
+.endpoint-header.open .ep-toggle{transform:rotate(180deg)}
+
+/* Tabs inside endpoint body */
+.tabs{display:flex;gap:0;margin-bottom:16px;border-bottom:1px solid var(--border)}
+.tab{padding:8px 16px;font-size:12px;font-weight:500;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;font-family:'Roboto Mono',monospace}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* Query params table */
+.param-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px}
+.param-table th{text-align:left;padding:6px 12px;background:var(--surface-2);font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.param-table td{padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.4);vertical-align:top}
+.param-table tr:last-child td{border-bottom:none}
+.param-name{font-family:'Roboto Mono',monospace;font-size:12px;color:var(--orange)}
+.param-type{font-family:'Roboto Mono',monospace;font-size:11px;color:var(--blue)}
+.param-req{color:var(--red);font-size:10px;font-weight:700}
+.param-opt{color:var(--text-muted);font-size:10px}
+
+.code-block{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px;font-family:'Roboto Mono',monospace;font-size:11px;line-height:1.7;overflow-x:auto;margin-bottom:12px}
+.json-key{color:#a5d6ff}.json-str{color:#ffa657}.json-num{color:#79c0ff}.json-bool{color:#ff7b72}.json-null{color:#8b949e}.json-cm{color:#8b949e;font-style:italic}
+
+/* Status badges */
+.status-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.status-badge{padding:3px 10px;border-radius:4px;font-size:11px;font-family:'Roboto Mono',monospace;font-weight:700}
+.s-200{background:rgba(63,185,80,0.15);color:var(--green);border:1px solid rgba(63,185,80,0.3)}
+.s-400{background:rgba(255,166,87,0.15);color:var(--orange);border:1px solid rgba(255,166,87,0.3)}
+.s-404{background:rgba(248,81,73,0.15);color:var(--red);border:1px solid rgba(248,81,73,0.3)}
+.s-500{background:rgba(188,140,255,0.15);color:var(--purple);border:1px solid rgba(188,140,255,0.3)}
+
+/* Base URL banner -->
+.base-url-banner{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 20px;margin-bottom:32px;display:flex;align-items:center;gap:16px}
+.base-url-label{font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase}
+.base-url-value{font-family:'Roboto Mono',monospace;font-size:13px;color:var(--blue)}
+.base-url-copy{font-size:11px;color:var(--text-muted);margin-left:auto;background:var(--surface-2);border:1px solid var(--border);border-radius:4px;padding:3px 10px;cursor:pointer;transition:all 0.2s}
+.base-url-copy:hover{border-color:var(--blue);color:var(--blue)}
+
+.fade-in{opacity:0;transform:translateY(16px);transition:opacity 0.5s,transform 0.5s}
+.fade-in.in-view{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-brand">
+    <svg class="nav-brand-icon" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13" stroke="#D4A017" stroke-width="1.5"/><path d="M14 6v16M10 10l-4 4M18 10l4 4M10 18l-4-4M18 18l4-4" stroke="#D4A017" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <span class="nav-brand-text">Ardent Mills</span>
+  </a>
+  <a href="index.html" class="nav-link">Home</a>
+  <a href="01-system-overview.html" class="nav-link">01 System</a>
+  <a href="02-frontend-architecture.html" class="nav-link">02 Frontend</a>
+  <a href="03-backend-architecture.html" class="nav-link">03 Backend</a>
+  <a href="04-data-model.html" class="nav-link">04 Data Model</a>
+  <a href="05-api-reference.html" class="nav-link active">05 API</a>
+  <a href="06-request-flow.html" class="nav-link">06 Flow<span class="nav-anim-badge">ANIM</span></a>
+  <div class="nav-spacer"></div>
+  <a href="../mockup/index.html" class="nav-link" style="color:var(--gold)">UI Mockups</a>
+</nav>
+
+<div class="page-header">
+  <div class="page-eyebrow">Doc 05 · REST API</div>
+  <div class="page-title">API Reference</div>
+  <div class="page-sub">Complete REST endpoint catalogue — request/response shapes, query parameters, HTTP status codes, and example JSON payloads. All endpoints return JSON and are documented at /swagger.</div>
+</div>
+
+<div class="api-layout">
+  <!-- Sidebar -->
+  <div class="api-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Shipments</div>
+      <a class="sidebar-link active" onclick="scrollTo('shipments-list')"><span class="sidebar-method m-get">GET</span>/api/shipments</a>
+      <a class="sidebar-link" onclick="scrollTo('shipments-id')"><span class="sidebar-method m-get">GET</span>/api/shipments/{id}</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Mills</div>
+      <a class="sidebar-link" onclick="scrollTo('mills-list')"><span class="sidebar-method m-get">GET</span>/api/mills</a>
+      <a class="sidebar-link" onclick="scrollTo('mills-id')"><span class="sidebar-method m-get">GET</span>/api/mills/{id}</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Quality</div>
+      <a class="sidebar-link" onclick="scrollTo('quality-list')"><span class="sidebar-method m-get">GET</span>/api/quality-tests</a>
+      <a class="sidebar-link" onclick="scrollTo('quality-id')"><span class="sidebar-method m-get">GET</span>/api/quality-tests/{id}</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Dashboard</div>
+      <a class="sidebar-link" onclick="scrollTo('dashboard-kpi')"><span class="sidebar-method m-get">GET</span>/api/dashboard/kpis</a>
+      <a class="sidebar-link" onclick="scrollTo('dashboard-trend')"><span class="sidebar-method m-get">GET</span>/api/dashboard/trend</a>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="api-content">
+    <div class="base-url-banner fade-in">
+      <div class="base-url-label">Base URL</div>
+      <div class="base-url-value">https://localhost:7248</div>
+      <div class="base-url-label" style="margin-left:32px">Swagger UI</div>
+      <div class="base-url-value">https://localhost:7248/swagger</div>
+      <button class="base-url-copy" onclick="this.textContent='Copied!'">Copy URL</button>
+    </div>
+
+    <!-- SHIPMENTS -->
+    <div class="section-title fade-in" id="shipments-list">Shipments</div>
+
+    <div class="endpoint fade-in" id="ep-shipments-list">
+      <div class="endpoint-header" onclick="toggleEp(this)">
+        <span class="method method-get">GET</span>
+        <span class="path">/api/shipments</span>
+        <span class="ep-desc">List all shipments (paginated, filterable)</span>
+        <span class="ep-toggle">▼</span>
+      </div>
+      <div class="ep-body open">
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab(this,'params')">Parameters</div>
+          <div class="tab" onclick="switchTab(this,'response')">Response 200</div>
+          <div class="tab" onclick="switchTab(this,'errors')">Status Codes</div>
+        </div>
+        <div class="tab-panel active" data-panel="params">
+          <table class="param-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td class="param-name">page</td><td class="param-type">int</td><td class="param-opt">optional</td><td style="font-size:12px;color:var(--text-muted)">Page number, default 1</td></tr>
+              <tr><td class="param-name">pageSize</td><td class="param-type">int</td><td class="param-opt">optional</td><td style="font-size:12px;color:var(--text-muted)">Items per page, default 10, max 100</td></tr>
+              <tr><td class="param-name">status</td><td class="param-type">string</td><td class="param-opt">optional</td><td style="font-size:12px;color:var(--text-muted)">Scheduled | InTransit | Delivered | Delayed</td></tr>
+              <tr><td class="param-name">grainType</td><td class="param-type">string</td><td class="param-opt">optional</td><td style="font-size:12px;color:var(--text-muted)">Wheat | Corn | Soy | Oats</td></tr>
+              <tr><td class="param-name">originMillId</td><td class="param-type">int</td><td class="param-opt">optional</td><td style="font-size:12px;color:var(--text-muted)">Filter by source mill ID</td></tr>
+              <tr><td class="param-name">from</td><td class="param-type">date</td><td class="param-opt">optional</td><td style="font-size:12px;color:var(--text-muted)">DepartureDate ≥ (yyyy-MM-dd)</td></tr>
+              <tr><td class="param-name">to</td><td class="param-type">date</td><td class="param-opt">optional</td><td style="font-size:12px;color:var(--text-muted)">DepartureDate ≤ (yyyy-MM-dd)</td></tr>
+            </tbody>
+          </table>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:8px">Example: <code style="font-family:'Roboto Mono',monospace;color:var(--blue)">GET /api/shipments?status=InTransit&grainType=Wheat&page=1&pageSize=10</code></div>
+        </div>
+        <div class="tab-panel" data-panel="response">
+          <div class="code-block"><span class="json-cm">// PagedResult&lt;ShipmentDto&gt;</span>
+{
+  <span class="json-key">"total"</span>: <span class="json-num">1247</span>,
+  <span class="json-key">"page"</span>: <span class="json-num">1</span>,
+  <span class="json-key">"pageSize"</span>: <span class="json-num">10</span>,
+  <span class="json-key">"items"</span>: [
+    {
+      <span class="json-key">"id"</span>: <span class="json-num">4821</span>,
+      <span class="json-key">"shipmentNumber"</span>: <span class="json-str">"SHP-2026-04821"</span>,
+      <span class="json-key">"status"</span>: <span class="json-str">"InTransit"</span>,
+      <span class="json-key">"grainType"</span>: <span class="json-str">"Wheat"</span>,
+      <span class="json-key">"quantityLbs"</span>: <span class="json-num">46200</span>,
+      <span class="json-key">"originMillName"</span>: <span class="json-str">"Denver Mill"</span>,
+      <span class="json-key">"originMillId"</span>: <span class="json-num">1</span>,
+      <span class="json-key">"destinationCustomer"</span>: <span class="json-str">"Bimbo Bakeries — Dallas, TX"</span>,
+      <span class="json-key">"carrier"</span>: <span class="json-str">"BNSF Railway"</span>,
+      <span class="json-key">"transitMode"</span>: <span class="json-str">"Rail"</span>,
+      <span class="json-key">"departureDate"</span>: <span class="json-str">"2026-06-17"</span>,
+      <span class="json-key">"estimatedArrival"</span>: <span class="json-str">"2026-06-21"</span>
+    }
+    <span class="json-cm">// ... 9 more items</span>
+  ]
+}</div>
+        </div>
+        <div class="tab-panel" data-panel="errors">
+          <div class="status-row">
+            <span class="status-badge s-200">200 OK — paginated list</span>
+            <span class="status-badge s-400">400 Bad Request — invalid filter params</span>
+            <span class="status-badge s-500">500 Server Error — unexpected failure</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="endpoint fade-in" id="ep-shipments-id">
+      <div class="endpoint-header" onclick="toggleEp(this)" id="shipments-id">
+        <span class="method method-get">GET</span>
+        <span class="path">/api/shipments/<span class="path-param">{id}</span></span>
+        <span class="ep-desc">Get single shipment by ID</span>
+        <span class="ep-toggle">▼</span>
+      </div>
+      <div class="ep-body">
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab(this,'params')">Parameters</div>
+          <div class="tab" onclick="switchTab(this,'response')">Response 200</div>
+          <div class="tab" onclick="switchTab(this,'errors')">Status Codes</div>
+        </div>
+        <div class="tab-panel active" data-panel="params">
+          <table class="param-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td class="param-name">id</td><td class="param-type">int</td><td class="param-req">required</td><td style="font-size:12px;color:var(--text-muted)">Shipment primary key (route segment)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tab-panel" data-panel="response">
+          <div class="code-block"><span class="json-cm">// ShipmentDetailDto (includes lot codes)</span>
+{
+  <span class="json-key">"id"</span>: <span class="json-num">4821</span>,
+  <span class="json-key">"shipmentNumber"</span>: <span class="json-str">"SHP-2026-04821"</span>,
+  <span class="json-key">"status"</span>: <span class="json-str">"InTransit"</span>,
+  <span class="json-key">"grainType"</span>: <span class="json-str">"Wheat"</span>,
+  <span class="json-key">"skuCode"</span>: <span class="json-str">"APF-50"</span>,
+  <span class="json-key">"quantityLbs"</span>: <span class="json-num">46200</span>,
+  <span class="json-key">"originMillId"</span>: <span class="json-num">1</span>,
+  <span class="json-key">"originMillName"</span>: <span class="json-str">"Denver Mill"</span>,
+  <span class="json-key">"destinationCustomer"</span>: <span class="json-str">"Bimbo Bakeries — Dallas, TX"</span>,
+  <span class="json-key">"carrier"</span>: <span class="json-str">"BNSF Railway"</span>,
+  <span class="json-key">"loadNumber"</span>: <span class="json-str">"LOAD-48021"</span>,
+  <span class="json-key">"wayBillNumber"</span>: <span class="json-str">"WB-2026-9901"</span>,
+  <span class="json-key">"departureDate"</span>: <span class="json-str">"2026-06-17"</span>,
+  <span class="json-key">"estimatedArrival"</span>: <span class="json-str">"2026-06-21"</span>,
+  <span class="json-key">"lotCodes"</span>: [<span class="json-str">"BAT-DEN-04801"</span>, <span class="json-str">"BAT-DEN-04802"</span>]
+}</div>
+        </div>
+        <div class="tab-panel" data-panel="errors">
+          <div class="status-row">
+            <span class="status-badge s-200">200 OK — detail object</span>
+            <span class="status-badge s-404">404 Not Found — id not found</span>
+            <span class="status-badge s-500">500 Server Error</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MILLS -->
+    <div class="section-title fade-in" id="mills-list">Mills</div>
+
+    <div class="endpoint fade-in">
+      <div class="endpoint-header" onclick="toggleEp(this)">
+        <span class="method method-get">GET</span>
+        <span class="path">/api/mills</span>
+        <span class="ep-desc">List all mills with status and utilization</span>
+        <span class="ep-toggle">▼</span>
+      </div>
+      <div class="ep-body">
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab(this,'params')">Parameters</div>
+          <div class="tab" onclick="switchTab(this,'response')">Response 200</div>
+        </div>
+        <div class="tab-panel active" data-panel="params">
+          <table class="param-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td class="param-name">status</td><td class="param-type">string</td><td class="param-opt">optional</td><td style="font-size:12px;color:var(--text-muted)">Operational | Reduced | Maintenance | Offline</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tab-panel" data-panel="response">
+          <div class="code-block"><span class="json-cm">// MillDto[]</span>
+[
+  {
+    <span class="json-key">"id"</span>: <span class="json-num">1</span>,
+    <span class="json-key">"millCode"</span>: <span class="json-str">"MILL-DEN"</span>,
+    <span class="json-key">"name"</span>: <span class="json-str">"Denver Mill"</span>,
+    <span class="json-key">"city"</span>: <span class="json-str">"Denver"</span>,
+    <span class="json-key">"state"</span>: <span class="json-str">"CO"</span>,
+    <span class="json-key">"status"</span>: <span class="json-str">"Operational"</span>,
+    <span class="json-key">"capacityTonsDay"</span>: <span class="json-num">1800</span>,
+    <span class="json-key">"dailyOutput"</span>: <span class="json-num">1692</span>,
+    <span class="json-key">"utilizationPct"</span>: <span class="json-num">94.0</span>,
+    <span class="json-key">"alertCount"</span>: <span class="json-num">0</span>,
+    <span class="json-key">"lastInspection"</span>: <span class="json-str">"2026-05-15"</span>
+  }
+  <span class="json-cm">// ... 9 more mills</span>
+]</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="endpoint fade-in" id="mills-id">
+      <div class="endpoint-header" onclick="toggleEp(this)">
+        <span class="method method-get">GET</span>
+        <span class="path">/api/mills/<span class="path-param">{id}</span></span>
+        <span class="ep-desc">Get mill detail with alerts and QC summary</span>
+        <span class="ep-toggle">▼</span>
+      </div>
+      <div class="ep-body">
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab(this,'response')">Response 200</div>
+          <div class="tab" onclick="switchTab(this,'errors')">Status Codes</div>
+        </div>
+        <div class="tab-panel active" data-panel="response">
+          <div class="code-block"><span class="json-cm">// MillDetailDto</span>
+{
+  <span class="json-key">"id"</span>: <span class="json-num">1</span>, <span class="json-key">"millCode"</span>: <span class="json-str">"MILL-DEN"</span>,
+  <span class="json-key">"name"</span>: <span class="json-str">"Denver Mill"</span>,
+  <span class="json-key">"status"</span>: <span class="json-str">"Operational"</span>,
+  <span class="json-key">"capacityTonsDay"</span>: <span class="json-num">1800</span>,
+  <span class="json-key">"dailyOutput"</span>: <span class="json-num">1692</span>,
+  <span class="json-key">"activeAlerts"</span>: [],
+  <span class="json-key">"recentQcPassRate"</span>: <span class="json-num">97.2</span>,
+  <span class="json-key">"recentShipments"</span>: [...]
+}</div>
+        </div>
+        <div class="tab-panel" data-panel="errors">
+          <div class="status-row">
+            <span class="status-badge s-200">200 OK</span>
+            <span class="status-badge s-404">404 Not Found</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUALITY -->
+    <div class="section-title fade-in" id="quality-list">Quality Tests</div>
+
+    <div class="endpoint fade-in">
+      <div class="endpoint-header" onclick="toggleEp(this)">
+        <span class="method method-get">GET</span>
+        <span class="path">/api/quality-tests</span>
+        <span class="ep-desc">List quality tests with filter and paginator</span>
+        <span class="ep-toggle">▼</span>
+      </div>
+      <div class="ep-body">
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab(this,'params')">Parameters</div>
+          <div class="tab" onclick="switchTab(this,'response')">Response 200</div>
+        </div>
+        <div class="tab-panel active" data-panel="params">
+          <table class="param-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td class="param-name">page / pageSize</td><td class="param-type">int</td><td class="param-opt">optional</td><td style="font-size:12px;color:var(--text-muted)">Pagination; default 1/10</td></tr>
+              <tr><td class="param-name">millId</td><td class="param-type">int</td><td class="param-opt">optional</td><td style="font-size:12px;color:var(--text-muted)">Filter by mill</td></tr>
+              <tr><td class="param-name">grainType</td><td class="param-type">string</td><td class="param-opt">optional</td><td style="font-size:12px;color:var(--text-muted)">Wheat | Corn | Soy | Oats</td></tr>
+              <tr><td class="param-name">result</td><td class="param-type">string</td><td class="param-opt">optional</td><td style="font-size:12px;color:var(--text-muted)">Pass | Fail | Warn — use Fail for "failures only" toggle</td></tr>
+              <tr><td class="param-name">grade</td><td class="param-type">string</td><td class="param-opt">optional</td><td style="font-size:12px;color:var(--text-muted)">No1 | No2 | Sample</td></tr>
+              <tr><td class="param-name">from / to</td><td class="param-type">date</td><td class="param-opt">optional</td><td style="font-size:12px;color:var(--text-muted)">TestDate range (yyyy-MM-dd)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tab-panel" data-panel="response">
+          <div class="code-block"><span class="json-cm">// PagedResult&lt;QualityTestDto&gt;</span>
+{
+  <span class="json-key">"total"</span>: <span class="json-num">4218</span>, <span class="json-key">"page"</span>: <span class="json-num">1</span>, <span class="json-key">"pageSize"</span>: <span class="json-num">10</span>,
+  <span class="json-key">"items"</span>: [
+    {
+      <span class="json-key">"id"</span>: <span class="json-num">1245</span>, <span class="json-key">"batchId"</span>: <span class="json-str">"BAT-MPO-04801"</span>,
+      <span class="json-key">"millId"</span>: <span class="json-num">8</span>, <span class="json-key">"millName"</span>: <span class="json-str">"Mount Pocono Mill"</span>,
+      <span class="json-key">"grainType"</span>: <span class="json-str">"Wheat"</span>,
+      <span class="json-key">"proteinPct"</span>: <span class="json-num">11.8</span>,
+      <span class="json-key">"moisturePct"</span>: <span class="json-num">14.6</span>,
+      <span class="json-key">"ashPct"</span>: <span class="json-num">0.44</span>,
+      <span class="json-key">"fallingNumber"</span>: <span class="json-num">342</span>,
+      <span class="json-key">"testWeightLbBu"</span>: <span class="json-num">60.1</span>,
+      <span class="json-key">"grade"</span>: <span class="json-str">"Sample"</span>,
+      <span class="json-key">"result"</span>: <span class="json-str">"Fail"</span>,
+      <span class="json-key">"testDate"</span>: <span class="json-str">"2026-06-19"</span>,
+      <span class="json-key">"inspector"</span>: <span class="json-str">"J. Martinez"</span>
+    }
+  ]
+}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="section-title fade-in" id="dashboard-kpi">Dashboard</div>
+
+    <div class="endpoint fade-in">
+      <div class="endpoint-header" onclick="toggleEp(this)">
+        <span class="method method-get">GET</span>
+        <span class="path">/api/dashboard/kpis</span>
+        <span class="ep-desc">Top-level KPI summary for dashboard cards</span>
+        <span class="ep-toggle">▼</span>
+      </div>
+      <div class="ep-body">
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab(this,'response')">Response 200</div>
+        </div>
+        <div class="tab-panel active" data-panel="response">
+          <div class="code-block"><span class="json-cm">// DashboardKpiDto</span>
+{
+  <span class="json-key">"totalShipments"</span>: <span class="json-num">1247</span>,
+  <span class="json-key">"shipmentsChangeYoy"</span>: <span class="json-num">8.3</span>,
+  <span class="json-key">"activeMills"</span>: <span class="json-num">9</span>,
+  <span class="json-key">"totalMills"</span>: <span class="json-num">10</span>,
+  <span class="json-key">"qualityScore"</span>: <span class="json-num">96.4</span>,
+  <span class="json-key">"qualityChangePts"</span>: <span class="json-num">1.2</span>,
+  <span class="json-key">"onTimeDelivery"</span>: <span class="json-num">92.7</span>,
+  <span class="json-key">"onTimeChangePts"</span>: <span class="json-num">-0.8</span>,
+  <span class="json-key">"criticalAlerts"</span>: <span class="json-num">1</span>,
+  <span class="json-key">"warningAlerts"</span>: <span class="json-num">2</span>
+}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="endpoint fade-in" id="dashboard-trend">
+      <div class="endpoint-header" onclick="toggleEp(this)">
+        <span class="method method-get">GET</span>
+        <span class="path">/api/dashboard/trend</span>
+        <span class="ep-desc">12-month shipment volume and grain mix data</span>
+        <span class="ep-toggle">▼</span>
+      </div>
+      <div class="ep-body">
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab(this,'response')">Response 200</div>
+        </div>
+        <div class="tab-panel active" data-panel="response">
+          <div class="code-block"><span class="json-cm">// DashboardTrendDto</span>
+{
+  <span class="json-key">"monthlyTrend"</span>: {
+    <span class="json-key">"labels"</span>: [<span class="json-str">"Jul '25"</span>, <span class="json-str">"Aug"</span>, ..., <span class="json-str">"Jun '26"</span>],
+    <span class="json-key">"values"</span>: [<span class="json-num">980</span>,<span class="json-num">1020</span>,<span class="json-num">1110</span>,<span class="json-num">1180</span>,<span class="json-num">1240</span>,<span class="json-num">1190</span>,
+               <span class="json-num">1050</span>,<span class="json-num">980</span>,<span class="json-num">1090</span>,<span class="json-num">1170</span>,<span class="json-num">1220</span>,<span class="json-num">1247</span>]
+  },
+  <span class="json-key">"grainMix"</span>: {
+    <span class="json-key">"Wheat"</span>: <span class="json-num">5420</span>,
+    <span class="json-key">"Corn"</span>: <span class="json-num">1860</span>,
+    <span class="json-key">"Soy"</span>: <span class="json-num">940</span>,
+    <span class="json-key">"Oats"</span>: <span class="json-num">480</span>
+  }
+}</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function toggleEp(header) {
+  const body = header.nextElementSibling;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  header.classList.toggle('open', !isOpen);
+}
+
+function switchTab(tab, panel) {
+  const container = tab.closest('.ep-body');
+  container.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  container.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  tab.classList.add('active');
+  const target = container.querySelector(`[data-panel="${panel}"]`);
+  if (target) target.classList.add('active');
+}
+
+function scrollTo(id) {
+  const el = document.getElementById(id) || document.getElementById('ep-' + id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+  event.target.closest('.sidebar-link')?.classList.add('active');
+}
+
+const obs = new IntersectionObserver(e => e.forEach(en => { if(en.isIntersecting){en.target.classList.add('in-view');obs.unobserve(en.target);} }), {threshold:0.04});
+document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

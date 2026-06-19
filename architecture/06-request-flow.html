@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Request Flow — Ardent Mills Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0D1117;
+  --surface: #161B22;
+  --surface-2: #21262D;
+  --border: #30363D;
+  --text: #E6EDF3;
+  --text-muted: #8B949E;
+  --gold: #D4A017;
+  --gold-dim: rgba(212,160,23,0.15);
+  --blue: #58A6FF;
+  --green: #3FB950;
+  --red: #F85149;
+  --orange: #FFA657;
+  --purple: #BC8CFF;
+  --layer-browser: #1a2236;
+  --layer-net: #141a14;
+  --layer-api: #1a1a2e;
+  --layer-db: #141820;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-height:100vh}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:4px;padding:0 32px;height:52px}
+.nav-brand{display:flex;align-items:center;gap:8px;text-decoration:none;margin-right:20px}
+.nav-brand-icon{width:28px;height:28px}
+.nav-brand-text{font-size:14px;font-weight:700;color:var(--gold);white-space:nowrap}
+.nav-link{color:var(--text-muted);text-decoration:none;padding:5px 10px;border-radius:6px;font-size:12px;font-weight:500;transition:all 0.2s;white-space:nowrap}
+.nav-link:hover{color:var(--text);background:var(--surface-2)}
+.nav-link.active{color:var(--orange);background:rgba(255,166,87,0.12)}
+.nav-anim-badge{background:var(--gold);color:#000;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;margin-left:4px;vertical-align:middle}
+.nav-spacer{flex:1}
+
+/* PAGE HEADER */
+.page-header{padding:40px 48px 32px;border-bottom:1px solid var(--border)}
+.page-eyebrow{color:var(--orange);font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;font-family:'Roboto Mono',monospace}
+.page-title{font-size:34px;font-weight:700;line-height:1.2;margin-bottom:8px}
+.page-sub{color:var(--text-muted);font-size:14px;line-height:1.7;max-width:700px}
+
+/* CONTROLS */
+.controls{display:flex;align-items:center;gap:12px;padding:24px 48px;border-bottom:1px solid var(--border);background:var(--surface)}
+.btn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid;transition:all 0.2s;font-family:'Roboto',sans-serif}
+.btn-primary{background:var(--orange);border-color:var(--orange);color:#000}
+.btn-primary:hover{background:#e8913f}
+.btn-secondary{background:transparent;border-color:var(--border);color:var(--text-muted)}
+.btn-secondary:hover{border-color:var(--text-muted);color:var(--text)}
+.btn-reset{background:transparent;border-color:var(--border);color:var(--red);font-size:12px;padding:6px 12px}
+.step-counter{color:var(--text-muted);font-size:13px;margin-left:auto;font-family:'Roboto Mono',monospace}
+.step-counter span{color:var(--orange);font-weight:700}
+.auto-btn{background:transparent;border:1px solid var(--green);color:var(--green);font-size:12px;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all 0.2s;font-family:'Roboto',monospace}
+.auto-btn:hover{background:rgba(63,185,80,0.1)}
+.auto-btn.playing{border-color:var(--orange);color:var(--orange)}
+
+/* MAIN LAYOUT */
+.flow-layout{display:grid;grid-template-columns:1fr 340px;gap:0;min-height:calc(100vh - 200px)}
+
+/* DIAGRAM PANEL */
+.diagram-panel{padding:32px 48px;overflow:auto}
+.layer-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;padding-left:4px}
+.layer{border-radius:10px;border:1px solid var(--border);padding:16px;margin-bottom:10px;position:relative;transition:border-color 0.3s,box-shadow 0.3s}
+.layer-browser{background:var(--layer-browser)}
+.layer-net{background:var(--layer-net)}
+.layer-api{background:var(--layer-api)}
+.layer-db{background:var(--layer-db)}
+
+/* Steps inside layers */
+.steps-row{display:flex;gap:8px;flex-wrap:wrap}
+.step-node{
+  display:flex;align-items:center;gap:8px;
+  background:var(--surface-2);border:1px solid var(--border);
+  border-radius:8px;padding:8px 12px;
+  transition:all 0.4s cubic-bezier(0.16,1,0.3,1);
+  cursor:default;min-width:0;
+}
+.step-num{
+  width:22px;height:22px;border-radius:50%;
+  background:var(--surface);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:var(--text-muted);
+  flex-shrink:0;font-family:'Roboto Mono',monospace;
+  transition:all 0.4s;
+}
+.step-text{font-size:12px;color:var(--text-muted);line-height:1.3;transition:color 0.3s}
+.step-code{font-size:10px;font-family:'Roboto Mono',monospace;color:var(--text-muted);opacity:0.7;transition:color 0.3s}
+
+/* Active state */
+.step-node.active{
+  border-color:var(--orange);
+  background:rgba(255,166,87,0.08);
+  box-shadow:0 0 0 1px rgba(255,166,87,0.2), 0 4px 20px rgba(255,166,87,0.15);
+  transform:scale(1.02);
+}
+.step-node.active .step-num{background:var(--orange);border-color:var(--orange);color:#000}
+.step-node.active .step-text{color:var(--text)}
+.step-node.active .step-code{color:var(--orange);opacity:1}
+
+/* Done state */
+.step-node.done{border-color:rgba(63,185,80,0.4);background:rgba(63,185,80,0.04)}
+.step-node.done .step-num{background:var(--green);border-color:var(--green);color:#000}
+.step-node.done .step-text{color:var(--text-muted)}
+
+/* Layer active glow */
+.layer.layer-active{border-color:var(--orange);box-shadow:0 0 0 1px rgba(255,166,87,0.2),0 4px 24px rgba(255,166,87,0.1)}
+
+/* Arrow connectors */
+.arrow-row{display:flex;align-items:center;padding:4px 16px;gap:8px}
+.arrow-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+.arrow-label{font-size:10px;color:var(--text-muted);font-family:'Roboto Mono',monospace;opacity:0}
+.arrow-dot{width:8px;height:8px;border-radius:50%;background:var(--orange);opacity:0;transition:all 0.3s}
+.arrow-row.active .arrow-label{opacity:1;color:var(--orange)}
+.arrow-row.active .arrow-dot{opacity:1;animation:travelDot 0.8s ease-in-out infinite alternate}
+@keyframes travelDot{0%{transform:translateX(-20px);opacity:0.3}100%{transform:translateX(20px);opacity:1}}
+
+/* SIDE PANEL */
+.side-panel{background:var(--surface);border-left:1px solid var(--border);padding:24px;display:flex;flex-direction:column;gap:16px;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto}
+.side-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px}
+
+/* Step detail card */
+.step-detail{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:16px;min-height:180px;transition:all 0.3s}
+.detail-num{font-size:10px;font-weight:700;color:var(--orange);font-family:'Roboto Mono',monospace;margin-bottom:8px}
+.detail-title{font-size:15px;font-weight:600;margin-bottom:8px;line-height:1.3}
+.detail-desc{font-size:12px;color:var(--text-muted);line-height:1.7;margin-bottom:12px}
+.detail-code{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-family:'Roboto Mono',monospace;font-size:11px;color:var(--text-muted);line-height:1.6;overflow-x:auto}
+.code-kw{color:#ff7b72}
+.code-fn{color:#d2a8ff}
+.code-str{color:#a5d6ff}
+.code-type{color:#ffa657}
+.code-comment{color:#8b949e;font-style:italic}
+
+/* Timeline scrubber */
+.timeline{display:flex;gap:4px;flex-wrap:wrap}
+.tl-dot{width:20px;height:20px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);cursor:pointer;transition:all 0.2s;font-size:9px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-family:'Roboto Mono',monospace;font-weight:700}
+.tl-dot:hover{border-color:var(--orange);color:var(--orange)}
+.tl-dot.done{background:var(--green);border-color:var(--green);color:#000}
+.tl-dot.active{background:var(--orange);border-color:var(--orange);color:#000;transform:scale(1.2)}
+
+/* Layer key */
+.layer-key{display:flex;flex-direction:column;gap:6px}
+.key-row{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted)}
+.key-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+/* Progress bar */
+.progress-wrap{background:var(--surface-2);border-radius:4px;height:4px;overflow:hidden;margin:4px 0}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--orange),var(--gold));border-radius:4px;transition:width 0.4s ease;width:0%}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand">
+    <svg class="nav-brand-icon" viewBox="0 0 28 28" fill="none">
+      <circle cx="14" cy="14" r="13" stroke="#D4A017" stroke-width="1.5"/>
+      <path d="M14 6v16M10 10l-4 4M18 10l4 4M10 18l-4-4M18 18l4-4" stroke="#D4A017" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <span class="nav-brand-text">Ardent Mills</span>
+  </a>
+  <a href="index.html" class="nav-link">Home</a>
+  <a href="01-system-overview.html" class="nav-link">01 System</a>
+  <a href="02-frontend-architecture.html" class="nav-link">02 Frontend</a>
+  <a href="03-backend-architecture.html" class="nav-link">03 Backend</a>
+  <a href="04-data-model.html" class="nav-link">04 Data Model</a>
+  <a href="05-api-reference.html" class="nav-link">05 API</a>
+  <a href="06-request-flow.html" class="nav-link active">06 Flow<span class="nav-anim-badge">ANIM</span></a>
+  <div class="nav-spacer"></div>
+  <a href="../mockup/index.html" class="nav-link" style="color:var(--gold)">UI Mockups →</a>
+</nav>
+
+<div class="page-header">
+  <div class="page-eyebrow">Doc 06 · Request Lifecycle</div>
+  <div class="page-title">Full Request Flow</div>
+  <div class="page-sub">Animated 16-step trace of a single HTTP request — from user click on the Shipments page through Angular Signal Store, functional interceptors, ASP.NET Core controller, EF Core query, SQL Server, and back to an OnPush component re-render.</div>
+</div>
+
+<div class="controls">
+  <button class="btn btn-secondary" id="prevBtn" onclick="prevStep()">← Prev</button>
+  <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">Next →</button>
+  <button class="auto-btn" id="autoBtn" onclick="toggleAuto()">▶ Auto Play</button>
+  <button class="btn btn-reset" onclick="resetFlow()">Reset</button>
+  <div class="step-counter">Step <span id="curStepNum">0</span> / 16</div>
+</div>
+
+<div class="flow-layout">
+  <!-- DIAGRAM -->
+  <div class="diagram-panel">
+
+    <!-- BROWSER LAYER -->
+    <div class="layer-label">Browser · Angular 22</div>
+    <div class="layer layer-browser" id="layer-browser">
+      <div class="steps-row">
+        <div class="step-node" id="step-1">
+          <div class="step-num">1</div>
+          <div>
+            <div class="step-text">User Click</div>
+            <div class="step-code">ShipmentsComponent</div>
+          </div>
+        </div>
+        <div class="step-node" id="step-2">
+          <div class="step-num">2</div>
+          <div>
+            <div class="step-text">ShipmentsStore.load()</div>
+            <div class="step-code">signal store action</div>
+          </div>
+        </div>
+        <div class="step-node" id="step-3">
+          <div class="step-num">3</div>
+          <div>
+            <div class="step-text">Loading Interceptor ON</div>
+            <div class="step-code">queueMicrotask()</div>
+          </div>
+        </div>
+        <div class="step-node" id="step-4">
+          <div class="step-num">4</div>
+          <div>
+            <div class="step-text">Auth Interceptor</div>
+            <div class="step-code">Bearer token → header</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Arrow: Browser → Network -->
+    <div class="arrow-row" id="arrow-1">
+      <div class="arrow-line"></div>
+      <div class="arrow-dot"></div>
+      <div class="arrow-label">HTTPS GET /api/shipments</div>
+      <div class="arrow-dot"></div>
+      <div class="arrow-line"></div>
+    </div>
+
+    <!-- NETWORK LAYER -->
+    <div class="layer-label">Network · TLS 1.3</div>
+    <div class="layer layer-net" id="layer-net">
+      <div class="steps-row">
+        <div class="step-node" id="step-5">
+          <div class="step-num">5</div>
+          <div>
+            <div class="step-text">HTTP GET /api/shipments</div>
+            <div class="step-code">query params: page, filter</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Arrow: Network → API -->
+    <div class="arrow-row" id="arrow-2">
+      <div class="arrow-line"></div>
+      <div class="arrow-dot"></div>
+      <div class="arrow-label">Request arrives at Kestrel</div>
+      <div class="arrow-dot"></div>
+      <div class="arrow-line"></div>
+    </div>
+
+    <!-- API LAYER -->
+    <div class="layer-label">ASP.NET Core 9 · Kestrel</div>
+    <div class="layer layer-api" id="layer-api">
+      <div class="steps-row">
+        <div class="step-node" id="step-6">
+          <div class="step-num">6</div>
+          <div>
+            <div class="step-text">ShipmentsController</div>
+            <div class="step-code">GetAll([FromQuery] params)</div>
+          </div>
+        </div>
+        <div class="step-node" id="step-7">
+          <div class="step-num">7</div>
+          <div>
+            <div class="step-text">ShipmentService</div>
+            <div class="step-code">GetAllAsync(filter)</div>
+          </div>
+        </div>
+        <div class="step-node" id="step-8">
+          <div class="step-num">8</div>
+          <div>
+            <div class="step-text">EF Core IQueryable</div>
+            <div class="step-code">.Where().OrderBy()</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Arrow: API → DB -->
+    <div class="arrow-row" id="arrow-3">
+      <div class="arrow-line"></div>
+      <div class="arrow-dot"></div>
+      <div class="arrow-label">SQL query via EF Core provider</div>
+      <div class="arrow-dot"></div>
+      <div class="arrow-line"></div>
+    </div>
+
+    <!-- DB LAYER -->
+    <div class="layer-label">SQL Server LocalDB</div>
+    <div class="layer layer-db" id="layer-db">
+      <div class="steps-row">
+        <div class="step-node" id="step-9">
+          <div class="step-num">9</div>
+          <div>
+            <div class="step-text">SQL Query Executes</div>
+            <div class="step-code">SELECT * FROM Shipments WHERE…</div>
+          </div>
+        </div>
+        <div class="step-node" id="step-10">
+          <div class="step-num">10</div>
+          <div>
+            <div class="step-text">Rows Returned</div>
+            <div class="step-code">DataReader → entities</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Arrow: DB → API (response) -->
+    <div class="arrow-row" id="arrow-4">
+      <div class="arrow-line"></div>
+      <div class="arrow-dot"></div>
+      <div class="arrow-label">Entities → DTO mapping</div>
+      <div class="arrow-dot"></div>
+      <div class="arrow-line"></div>
+    </div>
+
+    <!-- API response layer -->
+    <div class="layer-label">ASP.NET Core · Response Pipeline</div>
+    <div class="layer layer-api" id="layer-api-resp">
+      <div class="steps-row">
+        <div class="step-node" id="step-11">
+          <div class="step-num">11</div>
+          <div>
+            <div class="step-text">DTO Projection</div>
+            <div class="step-code">entity → ShipmentDto</div>
+          </div>
+        </div>
+        <div class="step-node" id="step-12">
+          <div class="step-num">12</div>
+          <div>
+            <div class="step-text">200 OK Response</div>
+            <div class="step-code">Content-Type: application/json</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Arrow: API → Browser (response) -->
+    <div class="arrow-row" id="arrow-5">
+      <div class="arrow-line"></div>
+      <div class="arrow-dot"></div>
+      <div class="arrow-label">JSON payload → TLS → Browser</div>
+      <div class="arrow-dot"></div>
+      <div class="arrow-line"></div>
+    </div>
+
+    <!-- Browser response handling -->
+    <div class="layer-label">Browser · Angular 22 · Response Handling</div>
+    <div class="layer layer-browser" id="layer-browser-resp">
+      <div class="steps-row">
+        <div class="step-node" id="step-13">
+          <div class="step-num">13</div>
+          <div>
+            <div class="step-text">Error Interceptor Pass-through</div>
+            <div class="step-code">no error → pass to subscriber</div>
+          </div>
+        </div>
+        <div class="step-node" id="step-14">
+          <div class="step-num">14</div>
+          <div>
+            <div class="step-text">Loading Interceptor OFF</div>
+            <div class="step-code">queueMicrotask() finalize</div>
+          </div>
+        </div>
+        <div class="step-node" id="step-15">
+          <div class="step-num">15</div>
+          <div>
+            <div class="step-text">Signal Store Update</div>
+            <div class="step-code">patchState({ shipments, total })</div>
+          </div>
+        </div>
+        <div class="step-node" id="step-16">
+          <div class="step-num">16</div>
+          <div>
+            <div class="step-text">OnPush Re-render</div>
+            <div class="step-code">computed() → template update</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SIDE PANEL -->
+  <div class="side-panel">
+    <div>
+      <div class="side-title">Progress</div>
+      <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:4px" id="progressLabel">Click Next or Auto Play to begin</div>
+    </div>
+
+    <div>
+      <div class="side-title">Step Detail</div>
+      <div class="step-detail" id="stepDetail">
+        <div class="detail-num">READY</div>
+        <div class="detail-title">Click Next or Auto Play</div>
+        <div class="detail-desc">This diagram traces one complete HTTP request from a user click on the Shipments page to the final Angular OnPush component re-render. Use the controls to step through all 16 stages.</div>
+        <div class="detail-code"><span class="code-comment">// Step through the full request lifecycle</span><br><span class="code-kw">GET</span> /api/shipments?page=1&amp;pageSize=10</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="side-title">Timeline</div>
+      <div class="timeline" id="timeline"></div>
+    </div>
+
+    <div>
+      <div class="side-title">Layer Key</div>
+      <div class="layer-key">
+        <div class="key-row"><div class="key-dot" style="background:#1a2236;border:1px solid #D4A017"></div>Browser (Angular 22)</div>
+        <div class="key-row"><div class="key-dot" style="background:#141a14;border:1px solid #3FB950"></div>Network (TLS / HTTPS)</div>
+        <div class="key-row"><div class="key-dot" style="background:#1a1a2e;border:1px solid #7b68ee"></div>ASP.NET Core 9</div>
+        <div class="key-row"><div class="key-dot" style="background:#141820;border:1px solid #58A6FF"></div>SQL Server LocalDB</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const STEPS = [
+  {
+    num: 1, layer: 'browser',
+    title: 'User Click — ShipmentsComponent',
+    desc: 'The user clicks the Shipments nav item or applies a filter. The Angular event binding fires in ShipmentsComponent, calling the store action to trigger a data load.',
+    code: `<span class="code-comment">// ShipmentsComponent (standalone, OnPush)</span>
+<span class="code-kw">readonly</span> store = <span class="code-fn">inject</span>(<span class="code-type">ShipmentsStore</span>);
+
+<span class="code-kw">ngOnInit</span>() {
+  <span class="code-kw">this</span>.store.<span class="code-fn">load</span>();
+}`
+  },
+  {
+    num: 2, layer: 'browser',
+    title: 'ShipmentsStore.load() — Signal Store Action',
+    desc: 'The Signal Store action sets loading = true, then calls ShipmentService.getAll(). The store\'s computed() selectors immediately reflect the loading state in the template.',
+    code: `<span class="code-kw">const</span> <span class="code-type">ShipmentsStore</span> = <span class="code-fn">signalStore</span>(
+  <span class="code-fn">withState</span>({ shipments: [], loading: <span class="code-kw">false</span> }),
+  <span class="code-fn">withMethods</span>((store, svc = <span class="code-fn">inject</span>(<span class="code-type">ShipmentService</span>)) => ({
+    <span class="code-fn">load</span>() {
+      <span class="code-fn">patchState</span>(store, { loading: <span class="code-kw">true</span> });
+      svc.<span class="code-fn">getAll</span>().<span class="code-fn">subscribe</span>(...);
+    }
+  }))
+);`
+  },
+  {
+    num: 3, layer: 'browser',
+    title: 'Loading Interceptor — queueMicrotask()',
+    desc: 'The functional loading interceptor intercepts the outgoing request. It uses queueMicrotask() to avoid ExpressionChangedAfterChecked errors when toggling the global loading signal.',
+    code: `<span class="code-kw">export const</span> <span class="code-fn">loadingInterceptor</span>: <span class="code-type">HttpInterceptorFn</span> = (req, next) => {
+  <span class="code-kw">const</span> loader = <span class="code-fn">inject</span>(<span class="code-type">LoadingService</span>);
+  <span class="code-fn">queueMicrotask</span>(() => loader.<span class="code-fn">increment</span>());
+  <span class="code-kw">return</span> <span class="code-fn">next</span>(req).<span class="code-fn">pipe</span>(
+    <span class="code-fn">finalize</span>(() => <span class="code-fn">queueMicrotask</span>(() => loader.<span class="code-fn">decrement</span>()))
+  );
+};`
+  },
+  {
+    num: 4, layer: 'browser',
+    title: 'Auth Interceptor — Bearer Token',
+    desc: 'The functional auth interceptor reads the JWT from AuthService and clones the request with the Authorization header. In the PoC this uses a static demo token.',
+    code: `<span class="code-kw">export const</span> <span class="code-fn">authInterceptor</span>: <span class="code-type">HttpInterceptorFn</span> = (req, next) => {
+  <span class="code-kw">const</span> token = <span class="code-fn">inject</span>(<span class="code-type">AuthService</span>).token();
+  <span class="code-kw">if</span> (!token) <span class="code-kw">return</span> <span class="code-fn">next</span>(req);
+  <span class="code-kw">return</span> <span class="code-fn">next</span>(req.<span class="code-fn">clone</span>({
+    setHeaders: { Authorization: <span class="code-str">\`Bearer \${token}\`</span> }
+  }));
+};`
+  },
+  {
+    num: 5, layer: 'net',
+    title: 'HTTP GET /api/shipments — Network Transit',
+    desc: 'The request leaves the browser over TLS 1.3. It carries the Bearer token, Accept: application/json header, and query parameters for pagination and filtering.',
+    code: `<span class="code-comment">// Request headers on the wire</span>
+<span class="code-type">GET</span> /api/shipments?page=1&pageSize=10 HTTP/2
+<span class="code-kw">Host:</span> <span class="code-str">localhost:7248</span>
+<span class="code-kw">Authorization:</span> Bearer eyJhbGci...
+<span class="code-kw">Accept:</span> application/json`
+  },
+  {
+    num: 6, layer: 'api',
+    title: 'ShipmentsController — Route Match',
+    desc: 'Kestrel receives the request. The ASP.NET Core routing middleware matches GET /api/shipments to ShipmentsController.GetAll(). Query parameters are bound via [FromQuery].',
+    code: `[<span class="code-type">ApiController</span>]
+[<span class="code-fn">Route</span>(<span class="code-str">"api/[controller]"</span>)]
+<span class="code-kw">public class</span> <span class="code-type">ShipmentsController</span>(<span class="code-type">IShipmentService</span> svc)
+    : <span class="code-type">ControllerBase</span>
+{
+  [<span class="code-type">HttpGet</span>]
+  <span class="code-kw">public async</span> <span class="code-type">Task</span>&lt;<span class="code-type">IActionResult</span>&gt; <span class="code-fn">GetAll</span>(
+    [<span class="code-type">FromQuery</span>] <span class="code-type">ShipmentFilter</span> filter)
+  => <span class="code-fn">Ok</span>(<span class="code-kw">await</span> svc.<span class="code-fn">GetAllAsync</span>(filter));
+}`
+  },
+  {
+    num: 7, layer: 'api',
+    title: 'ShipmentService.GetAllAsync() — Service Layer',
+    desc: 'The thin controller delegates immediately to the service layer. ShipmentService receives the filter DTO and builds an IQueryable against the DbContext.',
+    code: `<span class="code-kw">public class</span> <span class="code-type">ShipmentService</span>(<span class="code-type">AppDbContext</span> db)
+    : <span class="code-type">IShipmentService</span>
+{
+  <span class="code-kw">public async</span> <span class="code-type">Task</span>&lt;<span class="code-type">PagedResult</span>&lt;<span class="code-type">ShipmentDto</span>&gt;&gt;
+    <span class="code-fn">GetAllAsync</span>(<span class="code-type">ShipmentFilter</span> filter)
+  {
+    <span class="code-kw">var</span> q = db.Shipments
+              .<span class="code-fn">AsNoTracking</span>()
+              .<span class="code-fn">Include</span>(s => s.OriginMill);
+    <span class="code-comment">// apply filter predicates…</span>
+  }
+}`
+  },
+  {
+    num: 8, layer: 'api',
+    title: 'EF Core IQueryable — Deferred Execution',
+    desc: 'The service builds an IQueryable chain — Where(), OrderBy(), Skip(), Take() — without hitting the database yet. EF Core translates this LINQ expression tree into SQL when ToListAsync() is called.',
+    code: `<span class="code-kw">var</span> q = db.Shipments.<span class="code-fn">AsNoTracking</span>();
+<span class="code-kw">if</span> (filter.Status <span class="code-kw">is not null</span>)
+  q = q.<span class="code-fn">Where</span>(s => s.Status == filter.Status);
+<span class="code-kw">if</span> (filter.GrainType <span class="code-kw">is not null</span>)
+  q = q.<span class="code-fn">Where</span>(s => s.GrainType == filter.GrainType);
+
+<span class="code-kw">var</span> total = <span class="code-kw">await</span> q.<span class="code-fn">CountAsync</span>();
+<span class="code-kw">var</span> items = <span class="code-kw">await</span> q
+  .<span class="code-fn">Skip</span>((filter.Page - 1) * filter.PageSize)
+  .<span class="code-fn">Take</span>(filter.PageSize)
+  .<span class="code-fn">ToListAsync</span>();`
+  },
+  {
+    num: 9, layer: 'db',
+    title: 'SQL Query Executes — SQL Server LocalDB',
+    desc: 'EF Core\'s SQL Server provider translates the LINQ expression to a parameterized T-SQL query. SQL Server LocalDB executes it against the Shipments table.',
+    code: `<span class="code-comment">-- Generated by EF Core (parameterized)</span>
+<span class="code-kw">SELECT</span> s.Id, s.ShipmentNumber, s.Status,
+       s.QuantityLbs, s.DepartureDate,
+       m.Name <span class="code-kw">AS</span> OriginMillName
+<span class="code-kw">FROM</span>   Shipments s
+<span class="code-kw">JOIN</span>   Mills m <span class="code-kw">ON</span> m.Id = s.OriginMillId
+<span class="code-kw">WHERE</span>  s.Status = <span class="code-str">@p0</span>
+<span class="code-kw">ORDER BY</span> s.DepartureDate <span class="code-kw">DESC</span>
+<span class="code-kw">OFFSET</span> 0 <span class="code-kw">ROWS FETCH NEXT</span> 10 <span class="code-kw">ROWS ONLY</span>`
+  },
+  {
+    num: 10, layer: 'db',
+    title: 'Rows Returned — DataReader → Entities',
+    desc: 'SQL Server streams the result set back through the SqlDataReader. EF Core materializes each row into a Shipment entity, resolving navigation properties where included.',
+    code: `<span class="code-comment">// EF Core materializes result rows</span>
+<span class="code-comment">// into tracked (or no-tracking) entities</span>
+List&lt;<span class="code-type">Shipment</span>&gt; shipments = [
+  <span class="code-kw">new</span> { Id = <span class="code-str">1</span>, Status = <span class="code-type">ShipmentStatus</span>.InTransit,
+         OriginMill = <span class="code-kw">new</span> Mill { Name = <span class="code-str">"Denver Mill"</span> } },
+  <span class="code-comment">// ... 9 more rows</span>
+];`
+  },
+  {
+    num: 11, layer: 'api',
+    title: 'DTO Projection — Entity → ShipmentDto',
+    desc: 'The service maps EF Core entities to ShipmentDto objects using manual projection. DTOs are intentionally decoupled from EF entities — no Lazy Loading leaks to the API surface.',
+    code: `<span class="code-kw">private static</span> <span class="code-type">ShipmentDto</span> <span class="code-fn">ToDto</span>(<span class="code-type">Shipment</span> s) => <span class="code-kw">new</span>(
+  s.Id,
+  s.ShipmentNumber,
+  s.Status.ToString(),
+  s.GrainType.ToString(),
+  s.QuantityLbs,
+  s.OriginMill?.Name ?? <span class="code-str">""</span>,
+  s.DestinationCustomer,
+  s.DepartureDate,
+  s.EstimatedArrival
+);`
+  },
+  {
+    num: 12, layer: 'api',
+    title: '200 OK — JSON Response Serialized',
+    desc: 'The controller returns Ok(pagedResult). ASP.NET Core serializes the PagedResult<ShipmentDto> to JSON using System.Text.Json. The response includes total count for the paginator.',
+    code: `<span class="code-comment">// Response body (application/json)</span>
+{
+  <span class="code-str">"total"</span>: 1247,
+  <span class="code-str">"page"</span>: 1,
+  <span class="code-str">"pageSize"</span>: 10,
+  <span class="code-str">"items"</span>: [
+    { <span class="code-str">"id"</span>: 1, <span class="code-str">"shipmentNumber"</span>: <span class="code-str">"SHP-2026-04821"</span>,
+      <span class="code-str">"status"</span>: <span class="code-str">"InTransit"</span>, <span class="code-str">"quantityLbs"</span>: 46200 },
+    <span class="code-comment">// ... 9 more</span>
+  ]
+}`
+  },
+  {
+    num: 13, layer: 'browser',
+    title: 'Error Interceptor — Pass-through (2xx)',
+    desc: 'The functional error interceptor catches HTTP errors (4xx/5xx) and shows a Material Snackbar. For a successful 200 response it passes through transparently to the next pipe operator.',
+    code: `<span class="code-kw">export const</span> <span class="code-fn">errorInterceptor</span>: <span class="code-type">HttpInterceptorFn</span> = (req, next) =>
+  <span class="code-fn">next</span>(req).<span class="code-fn">pipe</span>(
+    <span class="code-fn">catchError</span>((err: <span class="code-type">HttpErrorResponse</span>) => {
+      <span class="code-fn">inject</span>(<span class="code-type">MatSnackBar</span>).<span class="code-fn">open</span>(
+        <span class="code-str">\`Error \${err.status}: \${err.message}\`</span>, <span class="code-str">'Dismiss'</span>
+      );
+      <span class="code-kw">return</span> <span class="code-fn">throwError</span>(() => err);
+    })
+  );`
+  },
+  {
+    num: 14, layer: 'browser',
+    title: 'Loading Interceptor — finalize() OFF',
+    desc: 'The RxJS finalize() operator in the loading interceptor fires (success or error). queueMicrotask() defers the signal write to avoid Angular\'s change detection cycle timing issues.',
+    code: `<span class="code-comment">// finalize runs on complete OR error</span>
+<span class="code-fn">finalize</span>(() => {
+  <span class="code-fn">queueMicrotask</span>(() => {
+    loader.<span class="code-fn">decrement</span>();
+    <span class="code-comment">// isLoading signal drops to 0</span>
+    <span class="code-comment">// progress bar disappears</span>
+  });
+})`
+  },
+  {
+    num: 15, layer: 'browser',
+    title: 'Signal Store — patchState()',
+    desc: 'The subscribe callback in the store action writes the deserialized ShipmentDto[] and total count into the Signal Store. Angular\'s reactive graph marks all consumers dirty.',
+    code: `svc.<span class="code-fn">getAll</span>(filter).<span class="code-fn">subscribe</span>({
+  <span class="code-fn">next</span>: (result) => {
+    <span class="code-fn">patchState</span>(store, {
+      shipments: result.items,
+      total:     result.total,
+      loading:   <span class="code-kw">false</span>,
+    });
+    <span class="code-comment">// computed() selectors re-evaluate</span>
+  },
+  <span class="code-fn">error</span>: () => <span class="code-fn">patchState</span>(store, { loading: <span class="code-kw">false</span> })
+});`
+  },
+  {
+    num: 16, layer: 'browser',
+    title: 'OnPush Re-render — Template Update',
+    desc: 'Angular\'s change detection runs for ShipmentsComponent because its signal inputs changed. With ChangeDetectionStrategy.OnPush only this component subtree is checked. The table, paginator, and loading bar all update in one synchronous pass.',
+    code: `<span class="code-comment">// ShipmentsComponent template (excerpt)</span>
+<span class="code-kw">@if</span> (store.loading()) {
+  &lt;<span class="code-type">mat-progress-bar</span> mode=<span class="code-str">"indeterminate"</span>/&gt;
+}
+&lt;<span class="code-type">mat-table</span> [dataSource]=<span class="code-str">"store.shipments()"</span>&gt;
+  <span class="code-comment">&lt;!-- column defs --&gt;</span>
+&lt;/<span class="code-type">mat-table</span>&gt;
+&lt;<span class="code-type">mat-paginator</span> [length]=<span class="code-str">"store.total()"</span>/&gt;`
+  }
+];
+
+let currentStep = 0;
+let autoTimer = null;
+
+function buildTimeline() {
+  const tl = document.getElementById('timeline');
+  STEPS.forEach((s, i) => {
+    const d = document.createElement('div');
+    d.className = 'tl-dot';
+    d.textContent = s.num;
+    d.title = s.title;
+    d.onclick = () => goToStep(i + 1);
+    d.id = `tl-${s.num}`;
+    tl.appendChild(d);
+  });
+}
+
+function clearAll() {
+  STEPS.forEach(s => {
+    const el = document.getElementById(`step-${s.num}`);
+    if (el) el.classList.remove('active', 'done');
+  });
+  document.querySelectorAll('.arrow-row').forEach(a => a.classList.remove('active'));
+  document.querySelectorAll('.layer').forEach(l => l.classList.remove('layer-active'));
+  STEPS.forEach(s => {
+    const dot = document.getElementById(`tl-${s.num}`);
+    if (dot) dot.classList.remove('active', 'done');
+  });
+}
+
+function goToStep(n) {
+  currentStep = n;
+  clearAll();
+
+  for (let i = 1; i < n; i++) {
+    const el = document.getElementById(`step-${i}`);
+    if (el) el.classList.add('done');
+    const dot = document.getElementById(`tl-${i}`);
+    if (dot) { dot.classList.remove('active'); dot.classList.add('done'); }
+  }
+
+  const activeEl = document.getElementById(`step-${n}`);
+  if (activeEl) {
+    activeEl.classList.add('active');
+    activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  const dot = document.getElementById(`tl-${n}`);
+  if (dot) dot.classList.add('active');
+
+  // Activate layer highlight
+  const s = STEPS[n - 1];
+  const layerMap = {
+    browser: ['layer-browser', 'layer-browser-resp'],
+    net: ['layer-net'],
+    api: ['layer-api', 'layer-api-resp'],
+    db: ['layer-db']
+  };
+  const layerIds = layerMap[s.layer] || [];
+  layerIds.forEach(id => {
+    const l = document.getElementById(id);
+    if (l) l.classList.add('layer-active');
+  });
+
+  // Activate arrows between transitions
+  const arrowMap = { 5: 'arrow-1', 6: 'arrow-2', 9: 'arrow-3', 11: 'arrow-4', 13: 'arrow-5' };
+  if (arrowMap[n]) {
+    const ar = document.getElementById(arrowMap[n]);
+    if (ar) ar.classList.add('active');
+  }
+
+  // Update detail panel
+  const detail = document.getElementById('stepDetail');
+  detail.innerHTML = `
+    <div class="detail-num">STEP ${s.num} / 16 · ${s.layer.toUpperCase()}</div>
+    <div class="detail-title">${s.title}</div>
+    <div class="detail-desc">${s.desc}</div>
+    <div class="detail-code">${s.code}</div>
+  `;
+
+  // Progress
+  const pct = Math.round((n / 16) * 100);
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `${pct}% complete · Step ${n} of 16`;
+  document.getElementById('curStepNum').textContent = n;
+
+  document.getElementById('prevBtn').disabled = n <= 1;
+  document.getElementById('nextBtn').disabled = n >= 16;
+}
+
+function nextStep() {
+  if (currentStep < 16) goToStep(currentStep + 1);
+}
+
+function prevStep() {
+  if (currentStep > 1) goToStep(currentStep - 1);
+}
+
+function resetFlow() {
+  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; document.getElementById('autoBtn').textContent = '▶ Auto Play'; document.getElementById('autoBtn').classList.remove('playing'); }
+  currentStep = 0;
+  clearAll();
+  document.getElementById('progressBar').style.width = '0%';
+  document.getElementById('progressLabel').textContent = 'Click Next or Auto Play to begin';
+  document.getElementById('curStepNum').textContent = '0';
+  document.getElementById('stepDetail').innerHTML = `
+    <div class="detail-num">READY</div>
+    <div class="detail-title">Click Next or Auto Play</div>
+    <div class="detail-desc">This diagram traces one complete HTTP request from a user click on the Shipments page to the final Angular OnPush component re-render.</div>
+    <div class="detail-code"><span class="code-comment">// Step through the full request lifecycle</span><br><span class="code-kw">GET</span> /api/shipments?page=1&amp;pageSize=10</div>
+  `;
+  document.getElementById('prevBtn').disabled = true;
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function toggleAuto() {
+  const btn = document.getElementById('autoBtn');
+  if (autoTimer) {
+    clearInterval(autoTimer);
+    autoTimer = null;
+    btn.textContent = '▶ Auto Play';
+    btn.classList.remove('playing');
+  } else {
+    btn.textContent = '⏸ Pause';
+    btn.classList.add('playing');
+    if (currentStep === 0) goToStep(1);
+    autoTimer = setInterval(() => {
+      if (currentStep >= 16) {
+        clearInterval(autoTimer);
+        autoTimer = null;
+        btn.textContent = '▶ Auto Play';
+        btn.classList.remove('playing');
+      } else {
+        nextStep();
+      }
+    }, 1800);
+  }
+}
+
+buildTimeline();
+resetFlow();
+
+// Keyboard nav
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextStep();
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prevStep();
+  if (e.key === ' ') { e.preventDefault(); toggleAuto(); }
+  if (e.key === 'r' || e.key === 'R') resetFlow();
+});
+</script>
+</body>
+</html>
