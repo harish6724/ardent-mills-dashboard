@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRD — Ardent Mills Supply Chain Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0D1117;
+  --surface: #161B22;
+  --surface-2: #21262D;
+  --surface-3: #2D333B;
+  --border: #30363D;
+  --text: #E6EDF3;
+  --text-muted: #8B949E;
+  --text-subtle: #6E7681;
+  --gold: #D4A017;
+  --gold-dim: rgba(212,160,23,0.12);
+  --blue: #58A6FF;
+  --green: #3FB950;
+  --red: #F85149;
+  --orange: #FFA657;
+  --purple: #BC8CFF;
+  --p0: #F85149;
+  --p1: #FFA657;
+  --p2: #58A6FF;
+  --p3: #8B949E;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: 'Roboto', sans-serif; min-height: 100vh; font-size: 14px; line-height: 1.6; }
+
+/* ── TOP NAV ── */
+.topnav {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(13,17,23,0.95); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 32px; height: 52px;
+}
+.tn-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; margin-right: 16px; }
+.tn-brand-icon { width: 28px; height: 28px; }
+.tn-brand-text { font-size: 14px; font-weight: 700; color: var(--gold); }
+.tn-link { color: var(--text-muted); text-decoration: none; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; transition: all 0.2s; }
+.tn-link:hover { color: var(--text); background: var(--surface-2); }
+.tn-spacer { flex: 1; }
+.tn-badge { background: var(--gold); color: #000; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+
+/* ── LAYOUT ── */
+.layout { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 52px); }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  background: var(--surface); border-right: 1px solid var(--border);
+  position: sticky; top: 52px; height: calc(100vh - 52px);
+  overflow-y: auto; padding: 24px 0;
+}
+.sb-section { margin-bottom: 6px; }
+.sb-group { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-subtle); padding: 10px 20px 4px; }
+.sb-link {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 20px; font-size: 12px; color: var(--text-muted);
+  text-decoration: none; cursor: pointer; transition: all 0.2s;
+  border-left: 2px solid transparent;
+}
+.sb-link:hover { color: var(--text); background: var(--surface-2); }
+.sb-link.active { color: var(--gold); border-left-color: var(--gold); background: var(--gold-dim); }
+.sb-num { font-family: 'Roboto Mono', monospace; font-size: 10px; color: var(--text-subtle); min-width: 20px; }
+.sb-divider { height: 1px; background: var(--border); margin: 8px 20px; }
+
+/* ── MAIN CONTENT ── */
+.main { padding: 48px 64px 80px; max-width: 960px; }
+
+/* ── DOCUMENT HEADER ── */
+.doc-header { margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid var(--border); }
+.doc-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; font-family: 'Roboto Mono', monospace; }
+.doc-title { font-size: 38px; font-weight: 700; line-height: 1.15; margin-bottom: 8px; }
+.doc-subtitle { font-size: 16px; color: var(--text-muted); margin-bottom: 24px; font-weight: 300; }
+.doc-meta { display: flex; gap: 32px; flex-wrap: wrap; }
+.meta-item { }
+.meta-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-subtle); margin-bottom: 3px; }
+.meta-value { font-size: 13px; color: var(--text); font-family: 'Roboto Mono', monospace; }
+.doc-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; background: rgba(63,185,80,0.15); border: 1px solid rgba(63,185,80,0.4); color: var(--green); font-size: 12px; font-weight: 600; }
+.doc-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 2s ease-in-out infinite; }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* ── SECTIONS ── */
+.section { margin-bottom: 56px; }
+.section-anchor { position: relative; top: -80px; visibility: hidden; }
+.section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.section-num { font-size: 11px; font-weight: 700; font-family: 'Roboto Mono', monospace; color: var(--gold); background: var(--gold-dim); border: 1px solid rgba(212,160,23,0.3); padding: 2px 8px; border-radius: 4px; }
+.section-title { font-size: 22px; font-weight: 700; }
+.section-divider { height: 1px; background: var(--border); margin-bottom: 24px; }
+
+/* ── SUBSECTION ── */
+.sub-title { font-size: 16px; font-weight: 600; margin: 28px 0 12px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.sub-title::before { content: ''; width: 3px; height: 16px; background: var(--gold); border-radius: 2px; }
+
+/* ── PROSE ── */
+p { color: var(--text-muted); margin-bottom: 12px; line-height: 1.8; }
+p strong { color: var(--text); font-weight: 600; }
+ul.prose, ol.prose { color: var(--text-muted); padding-left: 20px; margin-bottom: 12px; }
+ul.prose li, ol.prose li { margin-bottom: 6px; line-height: 1.7; }
+ul.prose li strong, ol.prose li strong { color: var(--text); }
+
+/* ── CALLOUT BOXES ── */
+.callout { border-left: 3px solid var(--c, var(--gold)); background: rgba(255,255,255,0.03); border-radius: 0 8px 8px 0; padding: 14px 18px; margin-bottom: 16px; }
+.callout-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--c, var(--gold)); margin-bottom: 6px; }
+.callout p { margin: 0; font-size: 13px; line-height: 1.7; }
+
+/* ── PRIORITY BADGES ── */
+.priority { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; font-family: 'Roboto Mono', monospace; vertical-align: middle; }
+.p0 { background: rgba(248,81,73,0.15); color: var(--p0); border: 1px solid rgba(248,81,73,0.3); }
+.p1 { background: rgba(255,166,87,0.15); color: var(--p1); border: 1px solid rgba(255,166,87,0.3); }
+.p2 { background: rgba(88,166,255,0.15); color: var(--p2); border: 1px solid rgba(88,166,255,0.3); }
+.p3 { background: rgba(139,148,158,0.15); color: var(--p3); border: 1px solid rgba(139,148,158,0.3); }
+.badge { display: inline-flex; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; vertical-align: middle; }
+.badge-must { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+.badge-should { background: rgba(255,166,87,0.15); color: var(--orange); border: 1px solid rgba(255,166,87,0.3); }
+.badge-could { background: rgba(88,166,255,0.15); color: var(--blue); border: 1px solid rgba(88,166,255,0.3); }
+.badge-wont { background: rgba(139,148,158,0.15); color: var(--text-subtle); border: 1px solid var(--border); }
+.badge-done { background: rgba(63,185,80,0.1); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+.badge-new { background: rgba(212,160,23,0.15); color: var(--gold); border: 1px solid rgba(212,160,23,0.3); }
+
+/* ── REQUIREMENT CARDS ── */
+.req-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.req-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px 18px;
+  display: grid; grid-template-columns: auto 1fr auto;
+  gap: 12px; align-items: start;
+  transition: border-color 0.2s;
+}
+.req-card:hover { border-color: var(--surface-3); }
+.req-id { font-family: 'Roboto Mono', monospace; font-size: 11px; color: var(--text-subtle); white-space: nowrap; padding-top: 2px; }
+.req-text { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+.req-text strong { color: var(--text); }
+.req-badges { display: flex; gap: 4px; flex-shrink: 0; }
+
+/* ── USER STORY CARDS ── */
+.story-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+.story-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+}
+.story-header { padding: 12px 18px; display: flex; align-items: center; gap: 10px; background: var(--surface-2); border-bottom: 1px solid var(--border); cursor: pointer; }
+.story-id { font-family: 'Roboto Mono', monospace; font-size: 11px; color: var(--text-subtle); }
+.story-title { font-size: 13px; font-weight: 600; flex: 1; }
+.story-chevron { color: var(--text-muted); font-size: 11px; transition: transform 0.2s; }
+.story-header.open .story-chevron { transform: rotate(180deg); }
+.story-body { padding: 16px 18px; display: none; }
+.story-body.open { display: block; }
+.story-as { font-size: 13px; color: var(--text-muted); font-style: italic; margin-bottom: 12px; background: var(--surface-2); padding: 10px 14px; border-radius: 6px; line-height: 1.7; }
+.story-as strong { color: var(--text); font-style: normal; }
+.ac-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-subtle); margin-bottom: 8px; }
+.ac-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.ac-list li { font-size: 12px; color: var(--text-muted); display: flex; gap: 8px; align-items: flex-start; line-height: 1.6; }
+.ac-list li::before { content: '✓'; color: var(--green); font-size: 11px; flex-shrink: 0; margin-top: 1px; }
+
+/* ── PERSONA CARDS ── */
+.persona-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px; }
+.persona-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; transition: border-color 0.2s, box-shadow 0.2s; }
+.persona-card:hover { border-color: var(--c); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.persona-avatar { width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--c); display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 12px; }
+.persona-role { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--c); margin-bottom: 4px; }
+.persona-name { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.persona-desc { font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px; }
+.persona-goals { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-subtle); margin-bottom: 6px; }
+.persona-goal-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.persona-goal-list li { font-size: 12px; color: var(--text-muted); padding-left: 14px; position: relative; }
+.persona-goal-list li::before { content: '→'; position: absolute; left: 0; color: var(--c); }
+.persona-pain { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-subtle); margin: 10px 0 6px; }
+
+/* ── METRICS TABLE ── */
+.metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+.metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.metric-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+.metric-target { font-size: 22px; font-weight: 700; color: var(--c, var(--gold)); margin-bottom: 4px; font-family: 'Roboto Mono', monospace; }
+.metric-desc { font-size: 11px; color: var(--text-subtle); line-height: 1.5; }
+
+/* ── TIMELINE ── */
+.timeline { position: relative; padding-left: 28px; margin-bottom: 24px; }
+.timeline::before { content: ''; position: absolute; left: 8px; top: 8px; bottom: 8px; width: 1px; background: var(--border); }
+.tl-item { position: relative; margin-bottom: 24px; }
+.tl-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--c, var(--gold)); background: var(--bg); position: absolute; left: -24px; top: 3px; display: flex; align-items: center; justify-content: center; }
+.tl-dot.done { background: var(--c, var(--gold)); }
+.tl-dot.done::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #000; }
+.tl-milestone { font-size: 11px; font-weight: 700; color: var(--c, var(--gold)); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; font-family: 'Roboto Mono', monospace; }
+.tl-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.tl-desc { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+.tl-deliverables { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.tl-chip { font-size: 11px; padding: 2px 8px; border-radius: 4px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-muted); }
+
+/* ── NFR TABLE ── */
+.nfr-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 24px; }
+.nfr-table th { text-align: left; padding: 10px 16px; background: var(--surface-2); border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+.nfr-table td { padding: 10px 16px; border-bottom: 1px solid rgba(48,54,61,0.5); vertical-align: top; }
+.nfr-table tr:last-child td { border-bottom: none; }
+.nfr-table tr:hover td { background: rgba(255,255,255,0.02); }
+.nfr-cat { font-weight: 600; color: var(--text); white-space: nowrap; }
+.nfr-req { color: var(--text-muted); line-height: 1.6; }
+.nfr-target { font-family: 'Roboto Mono', monospace; font-size: 12px; color: var(--gold); }
+
+/* ── SCOPE TABLE ── */
+.scope-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.scope-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+.scope-title { font-size: 13px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.scope-list { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.scope-list li { font-size: 12px; color: var(--text-muted); display: flex; gap: 8px; align-items: flex-start; line-height: 1.5; }
+.scope-in::before { content: '✓'; color: var(--green); flex-shrink: 0; }
+.scope-out::before { content: '✗'; color: var(--red); flex-shrink: 0; }
+
+/* ── RISK TABLE ── */
+.risk-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 24px; }
+.risk-table th { text-align: left; padding: 8px 12px; background: var(--surface-2); border-bottom: 1px solid var(--border); font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+.risk-table td { padding: 10px 12px; border-bottom: 1px solid rgba(48,54,61,0.4); vertical-align: top; }
+.risk-table tr:last-child td { border-bottom: none; }
+.risk-high { color: var(--red); font-weight: 700; font-size: 11px; }
+.risk-med { color: var(--orange); font-weight: 700; font-size: 11px; }
+.risk-low { color: var(--green); font-weight: 700; font-size: 11px; }
+
+/* ── OPEN QUESTIONS ── */
+.oq-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.oq-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; display: flex; gap: 14px; align-items: flex-start; }
+.oq-num { font-family: 'Roboto Mono', monospace; font-size: 11px; color: var(--gold); background: var(--gold-dim); padding: 2px 7px; border-radius: 4px; flex-shrink: 0; margin-top: 2px; }
+.oq-q { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+.oq-context { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
+/* ── FADE IN ── */
+.fade-in { opacity: 0; transform: translateY(14px); transition: opacity 0.5s, transform 0.5s; }
+.fade-in.in-view { opacity: 1; transform: none; }
+
+/* ── PRINT ── */
+@media print {
+  .topnav, .sidebar { display: none; }
+  .layout { grid-template-columns: 1fr; }
+  .main { padding: 0; max-width: 100%; }
+  body { background: #fff; color: #000; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <a href="../architecture/index.html" class="tn-brand">
+    <svg class="tn-brand-icon" viewBox="0 0 28 28" fill="none">
+      <circle cx="14" cy="14" r="13" stroke="#D4A017" stroke-width="1.5"/>
+      <path d="M14 6v16M10 10l-4 4M18 10l4 4M10 18l-4-4M18 18l4-4" stroke="#D4A017" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <span class="tn-brand-text">Ardent Mills</span>
+  </a>
+  <a href="../mockup/index.html" class="tn-link">UI Mockups</a>
+  <a href="../architecture/index.html" class="tn-link">Architecture</a>
+  <div class="tn-spacer"></div>
+  <span class="tn-badge">PRD v1.0</span>
+</div>
+
+<div class="layout">
+  <!-- SIDEBAR NAV -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sb-section">
+      <div class="sb-group">Document</div>
+      <a class="sb-link active" onclick="scrollToSection('overview')"><span class="sb-num">00</span>Executive Summary</a>
+      <a class="sb-link" onclick="scrollToSection('context')"><span class="sb-num">01</span>Context &amp; Problem</a>
+      <a class="sb-link" onclick="scrollToSection('goals')"><span class="sb-num">02</span>Goals &amp; Success Metrics</a>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">
+      <div class="sb-group">Users</div>
+      <a class="sb-link" onclick="scrollToSection('personas')"><span class="sb-num">03</span>User Personas</a>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">
+      <div class="sb-group">Requirements</div>
+      <a class="sb-link" onclick="scrollToSection('scope')"><span class="sb-num">04</span>Scope</a>
+      <a class="sb-link" onclick="scrollToSection('functional')"><span class="sb-num">05</span>Functional Requirements</a>
+      <a class="sb-link" onclick="scrollToSection('stories')"><span class="sb-num">06</span>User Stories</a>
+      <a class="sb-link" onclick="scrollToSection('nonfunctional')"><span class="sb-num">07</span>Non-Functional Req.</a>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">
+      <div class="sb-group">Technical</div>
+      <a class="sb-link" onclick="scrollToSection('technical')"><span class="sb-num">08</span>Technical Requirements</a>
+      <a class="sb-link" onclick="scrollToSection('data')"><span class="sb-num">09</span>Data Requirements</a>
+      <a class="sb-link" onclick="scrollToSection('uiux')"><span class="sb-num">10</span>UI/UX Requirements</a>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">
+      <div class="sb-group">Planning</div>
+      <a class="sb-link" onclick="scrollToSection('timeline')"><span class="sb-num">11</span>Timeline &amp; Milestones</a>
+      <a class="sb-link" onclick="scrollToSection('risks')"><span class="sb-num">12</span>Risks &amp; Mitigations</a>
+      <a class="sb-link" onclick="scrollToSection('assumptions')"><span class="sb-num">13</span>Assumptions</a>
+      <a class="sb-link" onclick="scrollToSection('openqs')"><span class="sb-num">14</span>Open Questions</a>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- DOCUMENT HEADER -->
+    <div class="doc-header fade-in">
+      <div class="doc-eyebrow">Product Requirements Document</div>
+      <div class="doc-title">Ardent Mills Supply Chain Dashboard</div>
+      <div class="doc-subtitle">Real-time visibility across 10 milling locations — shipments, mill health, and grain quality in one unified interface.</div>
+      <div class="doc-meta">
+        <div class="meta-item">
+          <div class="meta-label">Version</div>
+          <div class="meta-value">1.0.0</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Date</div>
+          <div class="meta-value">2026-06-19</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Status</div>
+          <div class="doc-status">Active · PoC Phase</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Author</div>
+          <div class="meta-value">Product · Engineering</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Stack</div>
+          <div class="meta-value">Angular 22 · .NET 9 · SQL Server</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 00 EXECUTIVE SUMMARY ── -->
+    <div class="section fade-in">
+      <div id="overview" class="section-anchor"></div>
+      <div class="section-header">
+        <span class="section-num">00</span>
+        <h2 class="section-title">Executive Summary</h2>
+      </div>
+      <div class="section-divider"></div>
+
+      <p>Ardent Mills operates <strong>10 milling facilities</strong> across the United States, processing and shipping wheat, corn, soy, and oat products to bakeries and food manufacturers nationwide. Today, operations teams rely on disconnected spreadsheets, email threads, and phone calls to track shipment status, monitor mill performance, and manage grain quality certifications.</p>
+
+      <p>The <strong>Supply Chain Dashboard</strong> is a proof-of-concept web application that consolidates this data into a single, real-time interface. It gives supply chain managers, mill operators, and quality analysts instant visibility into the health of the entire distribution network — from grain leaving a mill to delivery confirmation at a customer bakery.</p>
+
+      <div class="callout" style="--c: var(--gold)">
+        <div class="callout-label">Product Vision</div>
+        <p>Provide every Ardent Mills team member with a single source of truth for supply chain operations — enabling faster decisions, earlier problem detection, and a measurable improvement in on-time delivery and quality compliance.</p>
+      </div>
+
+      <div class="sub-title">What This PoC Proves</div>
+      <ul class="prose">
+        <li><strong>Feasibility</strong> — A full-stack Angular 22 + ASP.NET Core 9 application can be built and deployed from a clean slate inside one sprint.</li>
+        <li><strong>Architecture</strong> — Signal-based state, httpResource, and OnPush change detection work together cleanly for this domain.</li>
+        <li><strong>UX</strong> — The Material M3 design system can be themed to Ardent Mills brand standards without heavy custom CSS work.</li>
+        <li><strong>Data model</strong> — The four-entity schema (Mill, Shipment, MillAlert, QualityTest) covers the minimum viable data surface for meaningful supply chain visibility.</li>
+      </ul>
+    </div>
+
+    <!-- ── 01 CONTEXT ── -->
+    <div class="section fade-in">
+      <div id="context" class="section-anchor"></div>
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">Context &amp; Problem Statement</h2>
+      </div>
+      <div class="section-divider"></div>
+
+      <div class="sub-title">Current State</div>
+      <p>Supply chain visibility at Ardent Mills is fragmented across multiple systems with no unified operational view:</p>
+      <ul class="prose">
+        <li><strong>Shipment tracking</strong> is managed via carrier portals and email updates — no central status board.</li>
+        <li><strong>Mill utilization</strong> is reported via weekly Excel sheets emailed by each facility's plant manager.</li>
+        <li><strong>Quality data</strong> (protein, moisture, ash, falling number) lives in a legacy LIMS that lacks a modern API.</li>
+        <li><strong>Alerts and incidents</strong> are communicated via phone and text, with no structured escalation path.</li>
+        <li>Managers must aggregate data from 4+ sources before answering any cross-mill question, typically taking 30–60 minutes.</li>
+      </ul>
+
+      <div class="sub-title">Pain Points</div>
+      <div class="callout" style="--c: var(--red)">
+        <div class="callout-label">Critical Pain</div>
+        <p>When a mill goes offline or a shipment is delayed, there is no system-level alert. Customers learn about delivery failures before internal managers do, damaging trust and creating reactive, expensive resolutions.</p>
+      </div>
+      <ul class="prose">
+        <li>Average time-to-awareness for a mill outage: <strong>4–6 hours</strong> (target: under 15 minutes).</li>
+        <li>Quality failures are discovered at delivery, not at dispatch — causing costly returns and re-shipments.</li>
+        <li>Executive KPI reports require manual compilation every Monday morning — a 2-hour task per analyst.</li>
+        <li>No historical trend data is readily available for capacity planning or carrier performance analysis.</li>
+      </ul>
+
+      <div class="sub-title">Opportunity</div>
+      <p>A unified dashboard with real-time data integration eliminates the manual aggregation overhead, surfaces alerts at the point of origin, and provides a foundation for predictive analytics in future phases.</p>
+    </div>
+
+    <!-- ── 02 GOALS ── -->
+    <div class="section fade-in">
+      <div id="goals" class="section-anchor"></div>
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Goals &amp; Success Metrics</h2>
+      </div>
+      <div class="section-divider"></div>
+
+      <div class="sub-title">Primary Goals</div>
+      <div class="req-grid">
+        <div class="req-card">
+          <div class="req-id">G-01</div>
+          <div class="req-text"><strong>Real-time visibility.</strong> All supply chain data (shipments, mills, quality) accessible in a single interface without manual aggregation.</div>
+          <div class="req-badges"><span class="priority p0">P0</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">G-02</div>
+          <div class="req-text"><strong>Proactive alerting.</strong> Mill incidents and quality failures surfaced before they become customer-facing problems.</div>
+          <div class="req-badges"><span class="priority p0">P0</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">G-03</div>
+          <div class="req-text"><strong>Reduced decision latency.</strong> A manager should be able to answer any operational question within 60 seconds — not 60 minutes.</div>
+          <div class="req-badges"><span class="priority p1">P1</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">G-04</div>
+          <div class="req-text"><strong>Executive reporting.</strong> KPI summary and trend data available on-demand, eliminating manual weekly report compilation.</div>
+          <div class="req-badges"><span class="priority p1">P1</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">G-05</div>
+          <div class="req-text"><strong>Platform for growth.</strong> The architecture should support predictive analytics, carrier API integrations, and mobile access in Phase 2 without a rewrite.</div>
+          <div class="req-badges"><span class="priority p2">P2</span></div>
+        </div>
+      </div>
+
+      <div class="sub-title">Success Metrics — Phase 1 (PoC)</div>
+      <div class="metrics-grid">
+        <div class="metric-card" style="--c: var(--green)">
+          <div class="metric-label">Mill alert awareness</div>
+          <div class="metric-target">&lt; 15 min</div>
+          <div class="metric-desc">Time from mill incident to dashboard alert visible to supply chain manager. Baseline: 4–6 hours.</div>
+        </div>
+        <div class="metric-card" style="--c: var(--gold)">
+          <div class="metric-label">On-time delivery rate</div>
+          <div class="metric-target">≥ 95%</div>
+          <div class="metric-desc">Target improvement from current 92.7% baseline within 90 days of go-live.</div>
+        </div>
+        <div class="metric-card" style="--c: var(--blue)">
+          <div class="metric-label">Quality pass rate</div>
+          <div class="metric-target">≥ 97%</div>
+          <div class="metric-desc">Target improvement from current 96.4% via earlier failure detection at dispatch.</div>
+        </div>
+        <div class="metric-card" style="--c: var(--orange)">
+          <div class="metric-label">Report compilation time</div>
+          <div class="metric-target">0 min</div>
+          <div class="metric-desc">Weekly KPI report eliminated. Data available live in dashboard — 2 hours/week saved per analyst.</div>
+        </div>
+        <div class="metric-card" style="--c: var(--purple)">
+          <div class="metric-label">Daily active users</div>
+          <div class="metric-target">≥ 20</div>
+          <div class="metric-desc">Target DAU across supply chain managers, mill operators, and QA analysts in first month post-launch.</div>
+        </div>
+        <div class="metric-card" style="--c: var(--green)">
+          <div class="metric-label">Page load (P95)</div>
+          <div class="metric-target">&lt; 2 sec</div>
+          <div class="metric-desc">95th percentile initial page load on a standard corporate network connection.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 03 PERSONAS ── -->
+    <div class="section fade-in">
+      <div id="personas" class="section-anchor"></div>
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">User Personas</h2>
+      </div>
+      <div class="section-divider"></div>
+
+      <div class="persona-grid">
+        <div class="persona-card" style="--c: var(--gold)">
+          <div class="persona-avatar">👨‍💼</div>
+          <div class="persona-role">Primary User</div>
+          <div class="persona-name">Supply Chain Manager</div>
+          <div class="persona-desc">Oversees shipments from all 10 mills to customer distribution centers. Responsible for on-time delivery KPIs and carrier relationship management. Checks the dashboard multiple times per day.</div>
+          <div class="persona-goals">Goals</div>
+          <ul class="persona-goal-list">
+            <li>See all in-transit shipments and identify delays before customer contact</li>
+            <li>Quickly reroute shipments when a mill goes offline</li>
+            <li>Track carrier performance across rail, truck, and barge</li>
+            <li>Build weekly summary for leadership in under 10 minutes</li>
+          </ul>
+          <div class="persona-pain">Pain Points</div>
+          <ul class="persona-goal-list" style="--c: var(--red)">
+            <li>Currently checks 5 different carrier portals for shipment status</li>
+            <li>No single view of all-mill utilization vs. capacity</li>
+          </ul>
+        </div>
+
+        <div class="persona-card" style="--c: var(--green)">
+          <div class="persona-avatar">🏭</div>
+          <div class="persona-role">Operational User</div>
+          <div class="persona-name">Mill Operations Manager</div>
+          <div class="persona-desc">Manages day-to-day production at a single mill facility. Responsible for throughput, equipment uptime, and scheduling outbound shipments. Uses the dashboard primarily to view their own mill's status and outbound queue.</div>
+          <div class="persona-goals">Goals</div>
+          <ul class="persona-goal-list">
+            <li>See real-time utilization vs. daily capacity target</li>
+            <li>Log and escalate maintenance alerts promptly</li>
+            <li>Track outbound shipments from their facility</li>
+            <li>View quality test results for batches they shipped</li>
+          </ul>
+          <div class="persona-pain">Pain Points</div>
+          <ul class="persona-goal-list" style="--c: var(--red)">
+            <li>Cannot see how their output affects overall network supply</li>
+            <li>Quality failures reported back days after shipment</li>
+          </ul>
+        </div>
+
+        <div class="persona-card" style="--c: var(--red)">
+          <div class="persona-avatar">🔬</div>
+          <div class="persona-role">Specialist User</div>
+          <div class="persona-name">Quality Assurance Analyst</div>
+          <div class="persona-desc">Runs and reviews quality tests on grain batches before they ship. Responsible for grading (US No.1, No.2, Sample) and ensuring specs are met. Reviews test history and identifies systematic issues at specific mills.</div>
+          <div class="persona-goals">Goals</div>
+          <ul class="persona-goal-list">
+            <li>Filter quality tests by mill, grain type, result, or date range</li>
+            <li>Quickly identify which batches failed and why</li>
+            <li>Track trends in protein, moisture, and falling number by mill</li>
+            <li>Flag Sample Grade lots before they leave the facility</li>
+          </ul>
+          <div class="persona-pain">Pain Points</div>
+          <ul class="persona-goal-list" style="--c: var(--red)">
+            <li>LIMS system has no cross-mill comparison view</li>
+            <li>Manual export to Excel required for any analysis</li>
+          </ul>
+        </div>
+
+        <div class="persona-card" style="--c: var(--purple)">
+          <div class="persona-avatar">📊</div>
+          <div class="persona-role">Executive Viewer</div>
+          <div class="persona-name">VP Supply Chain / Leadership</div>
+          <div class="persona-desc">Reviews weekly KPI summaries and approves strategic decisions (capacity investments, carrier contracts, mill maintenance windows). Uses the dashboard on a read-only basis for high-level trend data and exception reporting.</div>
+          <div class="persona-goals">Goals</div>
+          <ul class="persona-goal-list">
+            <li>See network-level KPIs (total shipments, on-time %, quality score)</li>
+            <li>Understand which mills are underperforming and why</li>
+            <li>Track 12-month shipment volume trends</li>
+            <li>Present supply chain health to board without manual prep</li>
+          </ul>
+          <div class="persona-pain">Pain Points</div>
+          <ul class="persona-goal-list" style="--c: var(--red)">
+            <li>KPI decks require 2 hours of manual data gathering each Monday</li>
+            <li>No real-time view — all reports are 1 week stale</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 04 SCOPE ── -->
+    <div class="section fade-in">
+      <div id="scope" class="section-anchor"></div>
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">Scope</h2>
+      </div>
+      <div class="section-divider"></div>
+
+      <div class="scope-grid">
+        <div class="scope-box">
+          <div class="scope-title" style="color: var(--green)">✓ In Scope — Phase 1 (PoC)</div>
+          <ul class="scope-list">
+            <li class="scope-in">Dashboard with 4 KPI cards, trend chart, grain-mix doughnut, alert strip</li>
+            <li class="scope-in">Shipments list with filtering (status, grain type, origin, destination)</li>
+            <li class="scope-in">Shipment detail view — metadata, status timeline, lot codes</li>
+            <li class="scope-in">Mills grid with status chip filters and utilization bars</li>
+            <li class="scope-in">Mill detail — stats, alert list, production bars, recent shipments</li>
+            <li class="scope-in">Quality tests table — protein/moisture/ash/FN, grade color coding, failures toggle</li>
+            <li class="scope-in">REST API with Swagger documentation</li>
+            <li class="scope-in">SQL Server LocalDB with seed data (10 mills, ~1,247 shipments, ~4,218 QC tests)</li>
+            <li class="scope-in">Angular Material M3 with Ardent Mills brand tokens</li>
+            <li class="scope-in">Responsive layout (desktop + tablet)</li>
+            <li class="scope-in">Bearer token authentication (static demo token for PoC)</li>
+          </ul>
+        </div>
+        <div class="scope-box">
+          <div class="scope-title" style="color: var(--red)">✗ Out of Scope — Phase 1</div>
+          <ul class="scope-list">
+            <li class="scope-out">Real-time carrier API integrations (UPS, BNSF, Coyote Logistics)</li>
+            <li class="scope-out">Production identity provider (Azure AD / Okta SSO)</li>
+            <li class="scope-out">Write operations — creating or editing shipments, mills, alerts</li>
+            <li class="scope-out">Email / SMS / Teams alert notifications</li>
+            <li class="scope-out">Mobile native application (iOS/Android)</li>
+            <li class="scope-out">LIMS system integration for live quality data</li>
+            <li class="scope-out">ERP / SAP integration for shipment creation</li>
+            <li class="scope-out">Predictive analytics / ML models</li>
+            <li class="scope-out">Multi-tenant or multi-company support</li>
+            <li class="scope-out">Audit logging and compliance reporting</li>
+            <li class="scope-out">Offline / PWA support</li>
+            <li class="scope-out">Data export (PDF, Excel download)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout" style="--c: var(--blue)">
+        <div class="callout-label">Phase 2 Preview</div>
+        <p>The PoC architecture is deliberately designed to accommodate Phase 2 additions without a rewrite — carrier webhooks will integrate via new API endpoints, SSO via Angular auth guards already stubbed, and write operations via new POST/PATCH controller actions on the existing service layer.</p>
+      </div>
+    </div>
+
+    <!-- ── 05 FUNCTIONAL REQUIREMENTS ── -->
+    <div class="section fade-in">
+      <div id="functional" class="section-anchor"></div>
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Functional Requirements</h2>
+      </div>
+      <div class="section-divider"></div>
+      <p>Requirements use MoSCoW prioritisation. <span class="badge badge-must">MUST</span> items are P0 — blocking for PoC. <span class="badge badge-should">SHOULD</span> are P1 — important but not blocking. <span class="badge badge-could">COULD</span> are P2 — nice-to-have.</p>
+
+      <div class="sub-title">F-100 · Dashboard Module</div>
+      <div class="req-grid">
+        <div class="req-card">
+          <div class="req-id">F-101</div>
+          <div class="req-text"><strong>KPI Cards.</strong> Display Total Shipments, Active Mills, Quality Score %, and On-Time Delivery % with period-over-period delta indicators (↑/↓ arrows with color coding).</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-102</div>
+          <div class="req-text"><strong>12-Month Trend Chart.</strong> Line chart showing monthly shipment volume for the trailing 12 months, rendered via Chart.js with Ardent Mills brand colors.</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-103</div>
+          <div class="req-text"><strong>Grain Mix Doughnut Chart.</strong> Show current daily throughput split by grain type (Wheat, Corn, Soy, Oats) in tonnes/day with legend and percentages.</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-104</div>
+          <div class="req-text"><strong>Alert Strip.</strong> Top-of-page strip showing active critical/warning alerts — mill outages and quality failures — with severity color coding. Dismissible per session.</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-105</div>
+          <div class="req-text"><strong>Recent Shipments Mini-Table.</strong> Last 5 shipments across all mills with quick status indicators, linkable to the full Shipment Detail view.</div>
+          <div class="req-badges"><span class="badge badge-should">SHOULD</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-106</div>
+          <div class="req-text"><strong>Dashboard Loading State.</strong> Progress bar and skeleton placeholders while KPI and chart data loads. All 4 data sources fetched in parallel via forkJoin.</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+      </div>
+
+      <div class="sub-title">F-200 · Shipments Module</div>
+      <div class="req-grid">
+        <div class="req-card">
+          <div class="req-id">F-201</div>
+          <div class="req-text"><strong>Shipments List.</strong> Paginated table of all shipments (1,247 records). Columns: ID, Product/SKU, Origin Mill, Destination, Carrier/Mode, Quantity (lbs), Departure, ETA, Status.</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-202</div>
+          <div class="req-text"><strong>Filter Form.</strong> Filter shipments by: Origin Mill (text search), Destination (text search), Status (select: Scheduled / In Transit / Delivered / Delayed), Grain Type (select: Wheat / Corn / Soy / Oats).</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-203</div>
+          <div class="req-text"><strong>Paginator.</strong> Material paginator with rows-per-page control (10/25/50). Show "1–10 of 1,247 shipments". Page state preserved in URL query params for shareable links.</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-204</div>
+          <div class="req-text"><strong>Sortable Columns.</strong> Columns sortable client-side: Departure Date (default desc), ETA, Quantity. Sort state reflected in MatSort header arrows.</div>
+          <div class="req-badges"><span class="badge badge-should">SHOULD</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-205</div>
+          <div class="req-text"><strong>Shipment Detail.</strong> Full detail page for a single shipment: metadata grid (SKU, lot codes, carrier, waybill, BOL), status timeline (5 steps), route information, and performance metrics.</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-206</div>
+          <div class="req-text"><strong>Status Timeline.</strong> Visual step-by-step timeline: Order Placed → QC Approved → Loaded → In Transit → Delivered, with timestamps and current step highlighted.</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-207</div>
+          <div class="req-text"><strong>Date Range Filter.</strong> Filter shipments by departure date range (from / to date pickers).</div>
+          <div class="req-badges"><span class="badge badge-could">COULD</span></div>
+        </div>
+      </div>
+
+      <div class="sub-title">F-300 · Mills Module</div>
+      <div class="req-grid">
+        <div class="req-card">
+          <div class="req-id">F-301</div>
+          <div class="req-text"><strong>Mills Grid.</strong> Responsive card grid of all 10 mills. Each card: name, location, status badge, utilization bar, capacity/output stats, alert badge, inspection date, "View Details" link.</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-302</div>
+          <div class="req-text"><strong>Status Chip Filters.</strong> Filter mill grid by status: All (10), Operational, Reduced, Maintenance, Offline — chip style with count badges. Updates grid instantly.</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-303</div>
+          <div class="req-text"><strong>Fleet Stats Bar.</strong> Above the mill grid: total capacity (t/day), total output (t/day), fleet efficiency %, mills online count, active alerts count.</div>
+          <div class="req-badges"><span class="badge badge-should">SHOULD</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-304</div>
+          <div class="req-text"><strong>Mill Detail Page.</strong> Hero stats row (capacity, output, efficiency, alert count), production breakdown bars by product (APF, WHL, BRD), 7-day output chart, mill information card, alert list, recent outbound shipments.</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-305</div>
+          <div class="req-text"><strong>Active Alerts List.</strong> In mill detail: list of active alerts with severity (Info/Warning/Critical), message, and timestamp. "All systems nominal" when no active alerts.</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-306</div>
+          <div class="req-text"><strong>QC Summary Block.</strong> In mill detail: total tests, pass count, pass rate %, average protein%, average moisture%.</div>
+          <div class="req-badges"><span class="badge badge-should">SHOULD</span></div>
+        </div>
+      </div>
+
+      <div class="sub-title">F-400 · Quality Module</div>
+      <div class="req-grid">
+        <div class="req-card">
+          <div class="req-id">F-401</div>
+          <div class="req-text"><strong>Quality Tests Table.</strong> Paginated table of all 4,218 test records. Columns: Test ID, Batch ID, Mill, Grain Type, Test Date, Protein%, Moisture%, Ash%, Falling#, Test Weight, Dockage%, Grade, Result, Inspector.</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-402</div>
+          <div class="req-text"><strong>Failures-Only Toggle.</strong> Slide toggle labeled "Failures only" that filters the table to Result = Fail rows only. Counter shows "152 failures (3.6%)".</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-403</div>
+          <div class="req-text"><strong>Grade Color Coding.</strong> Grade cells: US No.1 (green), US No.2 (dark green), Sample Grade (red). Fail rows have red-tinted row background (#FFF5F5 light / #2D1B1B dark).</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-404</div>
+          <div class="req-text"><strong>Spec Dot Indicators.</strong> Each measurement cell shows a colored dot (green/amber/red) indicating pass/warn/fail against spec thresholds: Protein ≥11.0%, Moisture ≤14.0%, Ash ≤0.48%, Falling# ≥300.</div>
+          <div class="req-badges"><span class="badge badge-should">SHOULD</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-405</div>
+          <div class="req-text"><strong>Quality Filter Toolbar.</strong> Filter by: Mill (select), Grain Type (select), Grade (select), Test Date range, and the Failures-Only toggle.</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-406</div>
+          <div class="req-text"><strong>Quality KPI Strip.</strong> Above the table: 5 mini-cards — Total Tests (4,218), Pass Rate (96.4%), Failures (152), Avg Protein% (11.6%), Avg Moisture% (12.1%).</div>
+          <div class="req-badges"><span class="badge badge-should">SHOULD</span></div>
+        </div>
+      </div>
+
+      <div class="sub-title">F-500 · Application Shell</div>
+      <div class="req-grid">
+        <div class="req-card">
+          <div class="req-id">F-501</div>
+          <div class="req-text"><strong>Sidenav Shell.</strong> Fixed left sidenav (256px) with logo, nav items (Dashboard, Shipments, Mills, Quality), user avatar chip. Active item highlighted in Wheat Gold.</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-502</div>
+          <div class="req-text"><strong>Top Bar.</strong> 64px topbar with hamburger toggle (collapse sidenav on mobile), page title, loading progress bar, and user info chip.</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-503</div>
+          <div class="req-text"><strong>Global Loading Indicator.</strong> MatProgressBar under topbar shows during any API request in flight. Uses LoadingService with queueMicrotask() to avoid ExpressionChangedAfterChecked errors.</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-504</div>
+          <div class="req-text"><strong>Error Snackbar.</strong> MatSnackBar notification for API errors (4xx/5xx) showing status code and message. Auto-dismissed after 5 seconds with manual dismiss option.</div>
+          <div class="req-badges"><span class="badge badge-must">MUST</span></div>
+        </div>
+        <div class="req-card">
+          <div class="req-id">F-505</div>
+          <div class="req-text"><strong>Breadcrumb Navigation.</strong> Breadcrumb trail on detail pages (e.g. Mills / Denver Mill) for clear wayfinding. Breadcrumb items are navigable links.</div>
+          <div class="req-badges"><span class="badge badge-should">SHOULD</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 06 USER STORIES ── -->
+    <div class="section fade-in">
+      <div id="stories" class="section-anchor"></div>
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">User Stories</h2>
+      </div>
+      <div class="section-divider"></div>
+      <p>Click any story to expand acceptance criteria.</p>
+
+      <div class="sub-title">Dashboard</div>
+      <div class="story-grid">
+        <div class="story-card">
+          <div class="story-header" onclick="toggleStory(this)">
+            <span class="story-id">US-101</span>
+            <span class="story-title">Morning health check</span>
+            <span class="priority p0">P0</span>
+            <span class="story-chevron">▼</span>
+          </div>
+          <div class="story-body">
+            <div class="story-as">As a <strong>Supply Chain Manager</strong>, I want to open the dashboard each morning and immediately see the health of the entire network — total active shipments, mill status, quality score, and on-time delivery rate — <strong>so that</strong> I can identify any overnight issues without opening multiple systems.</div>
+            <div class="ac-title">Acceptance Criteria</div>
+            <ul class="ac-list">
+              <li>Dashboard loads within 2 seconds on a standard corporate network</li>
+              <li>KPI cards display correct values: 1,247 shipments, 9/10 mills, 96.4% quality, 92.7% on-time</li>
+              <li>Delta indicators show direction (↑/↓) and value vs. prior period</li>
+              <li>Any critical alerts (e.g. Hastings Mill offline) are prominently displayed in the alert strip</li>
+              <li>Loading skeleton appears immediately while data fetches in parallel</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="story-card">
+          <div class="story-header" onclick="toggleStory(this)">
+            <span class="story-id">US-102</span>
+            <span class="story-title">Trend analysis for leadership</span>
+            <span class="priority p1">P1</span>
+            <span class="story-chevron">▼</span>
+          </div>
+          <div class="story-body">
+            <div class="story-as">As a <strong>VP Supply Chain</strong>, I want to see the 12-month shipment volume trend on the dashboard <strong>so that</strong> I can present network growth to the board without manually compiling data.</div>
+            <div class="ac-title">Acceptance Criteria</div>
+            <ul class="ac-list">
+              <li>Line chart shows 12 months of data (Jul '25 – Jun '26) with all 12 data points</li>
+              <li>Chart uses Wheat Gold brand color for the trend line</li>
+              <li>Hovering a data point shows the exact monthly value in a tooltip</li>
+              <li>Doughnut chart alongside shows grain mix: Wheat (5,420), Corn (1,860), Soy (940), Oats (480) t/day</li>
+              <li>Both charts are responsive and render correctly at 1280px and 1920px viewports</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="sub-title">Shipments</div>
+      <div class="story-grid">
+        <div class="story-card">
+          <div class="story-header" onclick="toggleStory(this)">
+            <span class="story-id">US-201</span>
+            <span class="story-title">Find a specific delayed shipment</span>
+            <span class="priority p0">P0</span>
+            <span class="story-chevron">▼</span>
+          </div>
+          <div class="story-body">
+            <div class="story-as">As a <strong>Supply Chain Manager</strong>, I want to filter shipments by "Delayed" status and a specific destination customer <strong>so that</strong> I can quickly locate the affected shipment and take corrective action.</div>
+            <div class="ac-title">Acceptance Criteria</div>
+            <ul class="ac-list">
+              <li>Status filter dropdown includes: All, Scheduled, In Transit, Delivered, Delayed</li>
+              <li>Filtering by Delayed immediately updates the table without a page reload</li>
+              <li>Result count updates: "Showing X of 1,247 shipments"</li>
+              <li>Clear Filters button resets all filters and restores the full list</li>
+              <li>Filter state is reflected in the URL so the view can be bookmarked or shared</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="story-card">
+          <div class="story-header" onclick="toggleStory(this)">
+            <span class="story-id">US-202</span>
+            <span class="story-title">View shipment status timeline</span>
+            <span class="priority p0">P0</span>
+            <span class="story-chevron">▼</span>
+          </div>
+          <div class="story-body">
+            <div class="story-as">As a <strong>Supply Chain Manager</strong>, I want to open a shipment detail page and see exactly which stage of transit it is in <strong>so that</strong> I can communicate accurate status to the receiving customer.</div>
+            <div class="ac-title">Acceptance Criteria</div>
+            <ul class="ac-list">
+              <li>Detail page loads via /shipments/:id with the shipment number (SHP-2026-04821) in the header</li>
+              <li>Status timeline shows 5 steps: Order Placed, QC Approved, Loaded, In Transit, Delivered</li>
+              <li>Completed steps show a green checkmark, current step shows a pulsing indicator, future steps are grey</li>
+              <li>Left panel shows: Product, SKU, Grain Type, Quantity, Origin Mill, Destination, Carrier, Mode, Departure, ETA, Lot Codes</li>
+              <li>Breadcrumb shows "Shipments / SHP-2026-04821" and breadcrumb links are functional</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="sub-title">Mills</div>
+      <div class="story-grid">
+        <div class="story-card">
+          <div class="story-header" onclick="toggleStory(this)">
+            <span class="story-id">US-301</span>
+            <span class="story-title">Identify mills below capacity threshold</span>
+            <span class="priority p0">P0</span>
+            <span class="story-chevron">▼</span>
+          </div>
+          <div class="story-body">
+            <div class="story-as">As a <strong>Supply Chain Manager</strong>, I want to filter the mills grid to show only Reduced-capacity mills <strong>so that</strong> I can assess whether I need to shift orders to higher-capacity facilities.</div>
+            <div class="ac-title">Acceptance Criteria</div>
+            <ul class="ac-list">
+              <li>Chip filter bar shows: All (10), Operational (7), Reduced (2), Maintenance (1), Offline (0)</li>
+              <li>Clicking "Reduced" filters grid to Mount Pocono (72%) and Modesto (76%) cards only</li>
+              <li>Utilization bar turns amber/orange for &lt;80% utilization, green for ≥90%, red for Maintenance/Offline</li>
+              <li>Count badge on each chip updates correctly when status changes</li>
+              <li>Grid reflows gracefully as cards are filtered out</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="story-card">
+          <div class="story-header" onclick="toggleStory(this)">
+            <span class="story-id">US-302</span>
+            <span class="story-title">Investigate a specific mill's performance</span>
+            <span class="priority p0">P0</span>
+            <span class="story-chevron">▼</span>
+          </div>
+          <div class="story-body">
+            <div class="story-as">As a <strong>Mill Operations Manager</strong>, I want to open the Denver Mill detail page and see production stats, active alerts, and recent shipments <strong>so that</strong> I can understand my mill's current standing.</div>
+            <div class="ac-title">Acceptance Criteria</div>
+            <ul class="ac-list">
+              <li>Hero banner shows: MILL-DEN, Denver Mill, Denver CO, Operational status badge</li>
+              <li>4 hero stats: 1,800 t/day capacity, 1,692 output, 94% efficiency, 0 active alerts</li>
+              <li>Production breakdown bars show APF/WHL/BRD split by percentage</li>
+              <li>7-day bar chart shows daily output for the prior 7 days (Jun 13–19)</li>
+              <li>Alert section shows "All systems nominal" with a green checkmark when no active alerts</li>
+              <li>Recent shipments mini-table shows last 4 outbound shipments with status badges</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="sub-title">Quality</div>
+      <div class="story-grid">
+        <div class="story-card">
+          <div class="story-header" onclick="toggleStory(this)">
+            <span class="story-id">US-401</span>
+            <span class="story-title">Review all quality failures today</span>
+            <span class="priority p0">P0</span>
+            <span class="story-chevron">▼</span>
+          </div>
+          <div class="story-body">
+            <div class="story-as">As a <strong>QA Analyst</strong>, I want to toggle "Failures only" and filter by today's date <strong>so that</strong> I can review every failed batch before end-of-day and initiate holds on affected shipments.</div>
+            <div class="ac-title">Acceptance Criteria</div>
+            <ul class="ac-list">
+              <li>"Failures only" toggle filters table to Result = Fail rows instantly</li>
+              <li>Paginator label updates: "Showing X of 152 failures (3.6%)"</li>
+              <li>Fail rows have a red-tinted background to distinguish them at a glance</li>
+              <li>Each measurement column shows a red dot next to values outside spec</li>
+              <li>Grade column shows "Sample Grade" in red for failing batches</li>
+              <li>Filter can be combined with Mill select and Date Range filter simultaneously</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 07 NON-FUNCTIONAL ── -->
+    <div class="section fade-in">
+      <div id="nonfunctional" class="section-anchor"></div>
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">Non-Functional Requirements</h2>
+      </div>
+      <div class="section-divider"></div>
+
+      <table class="nfr-table">
+        <thead>
+          <tr><th>Category</th><th>Requirement</th><th>Target</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="nfr-cat">Performance</td>
+            <td class="nfr-req">Initial page load (First Contentful Paint) on a 10 Mbps corporate connection</td>
+            <td class="nfr-target">&lt; 2.0 s</td>
+          </tr>
+          <tr>
+            <td class="nfr-cat">Performance</td>
+            <td class="nfr-req">API response time for paginated list endpoints (P95, under normal load)</td>
+            <td class="nfr-target">&lt; 300 ms</td>
+          </tr>
+          <tr>
+            <td class="nfr-cat">Performance</td>
+            <td class="nfr-req">Dashboard data load (4 parallel API calls via forkJoin)</td>
+            <td class="nfr-target">&lt; 1.5 s</td>
+          </tr>
+          <tr>
+            <td class="nfr-cat">Performance</td>
+            <td class="nfr-req">Angular production bundle size (gzipped)</td>
+            <td class="nfr-target">&lt; 300 KB</td>
+          </tr>
+          <tr>
+            <td class="nfr-cat">Scalability</td>
+            <td class="nfr-req">Concurrent users supported without degradation (PoC phase)</td>
+            <td class="nfr-target">≥ 50</td>
+          </tr>
+          <tr>
+            <td class="nfr-cat">Scalability</td>
+            <td class="nfr-req">Database record volume handled without query plan regression</td>
+            <td class="nfr-target">10 M rows</td>
+          </tr>
+          <tr>
+            <td class="nfr-cat">Reliability</td>
+            <td class="nfr-req">Application uptime target (PoC; not production SLA)</td>
+            <td class="nfr-target">99% / month</td>
+          </tr>
+          <tr>
+            <td class="nfr-cat">Security</td>
+            <td class="nfr-req">All API endpoints require valid Bearer token; 401 returned otherwise</td>
+            <td class="nfr-target">Enforced</td>
+          </tr>
+          <tr>
+            <td class="nfr-cat">Security</td>
+            <td class="nfr-req">SQL injection prevention — all queries parameterized via EF Core</td>
+            <td class="nfr-target">Enforced</td>
+          </tr>
+          <tr>
+            <td class="nfr-cat">Security</td>
+            <td class="nfr-req">HTTPS enforced; HTTP requests redirected to HTTPS</td>
+            <td class="nfr-target">Enforced</td>
+          </tr>
+          <tr>
+            <td class="nfr-cat">Security</td>
+            <td class="nfr-req">CORS restricted to Angular origin (localhost:4200 / production domain)</td>
+            <td class="nfr-target">Enforced</td>
+          </tr>
+          <tr>
+            <td class="nfr-cat">Accessibility</td>
+            <td class="nfr-req">WCAG 2.1 Level AA compliance — keyboard navigation, ARIA labels, contrast ratios</td>
+            <td class="nfr-target">AA</td>
+          </tr>
+          <tr>
+            <td class="nfr-cat">Browser Support</td>
+            <td class="nfr-req">Supported browsers — latest 2 versions of Chrome, Edge, Firefox, Safari</td>
+            <td class="nfr-target">Evergreen</td>
+          </tr>
+          <tr>
+            <td class="nfr-cat">Responsiveness</td>
+            <td class="nfr-req">Usable at 1024px (tablet landscape) through 1920px (desktop wide)</td>
+            <td class="nfr-target">1024–1920px</td>
+          </tr>
+          <tr>
+            <td class="nfr-cat">Maintainability</td>
+            <td class="nfr-req">Zero NgModules — all components standalone. ESLint with @angular-eslint enforced in CI</td>
+            <td class="nfr-target">Enforced</td>
+          </tr>
+          <tr>
+            <td class="nfr-cat">Testability</td>
+            <td class="nfr-req">Unit test coverage for service layer methods (happy path + error cases)</td>
+            <td class="nfr-target">≥ 80%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── 08 TECHNICAL ── -->
+    <div class="section fade-in">
+      <div id="technical" class="section-anchor"></div>
+      <div class="section-header">
+        <span class="section-num">08</span>
+        <h2 class="section-title">Technical Requirements</h2>
+      </div>
+      <div class="section-divider"></div>
+
+      <div class="sub-title">Frontend Stack</div>
+      <div class="req-grid">
+        <div class="req-card"><div class="req-id">T-101</div><div class="req-text"><strong>Angular 22</strong> — standalone components only (no NgModules). provideRouter() with withComponentInputBinding() and withPreloading(PreloadAllModules).</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+        <div class="req-card"><div class="req-id">T-102</div><div class="req-text"><strong>State Management</strong> — ngrx/signals Signal Stores (signalStore). One store per feature: DashboardStore, ShipmentsStore, MillsStore, QualityStore.</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+        <div class="req-card"><div class="req-id">T-103</div><div class="req-text"><strong>HTTP</strong> — HttpClient with provideHttpClient(withInterceptors([auth, loading, error])). httpResource() for detail views. Manual HttpClient calls in store actions for list views.</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+        <div class="req-card"><div class="req-id">T-104</div><div class="req-text"><strong>Change Detection</strong> — ChangeDetectionStrategy.OnPush on every component without exception. Signals and async pipe for all data binding.</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+        <div class="req-card"><div class="req-id">T-105</div><div class="req-text"><strong>Charts</strong> — ng2-charts v7 (Chart.js 4). BaseChartDirective for line and doughnut charts on dashboard. Bar chart for 7-day mill output.</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+        <div class="req-card"><div class="req-id">T-106</div><div class="req-text"><strong>UI Framework</strong> — Angular Material M3. MatSidenav, MatTable, MatPaginator, MatSort, MatChip, MatSnackBar, MatProgressBar, MatToggle. Custom M3 theme with Wheat Gold palette.</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+      </div>
+
+      <div class="sub-title">Backend Stack</div>
+      <div class="req-grid">
+        <div class="req-card"><div class="req-id">T-201</div><div class="req-text"><strong>ASP.NET Core 9</strong> — Minimal hosting model. [ApiController] controllers. Swashbuckle/Swagger at /swagger. System.Text.Json with camelCase naming policy.</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+        <div class="req-card"><div class="req-id">T-202</div><div class="req-text"><strong>Service Layer</strong> — IShipmentService, IMillService, IQualityTestService, IDashboardService interfaces with concrete implementations. Registered as Scoped in DI container.</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+        <div class="req-card"><div class="req-id">T-203</div><div class="req-text"><strong>Entity Framework Core 9</strong> — SQL Server provider. Code-first migrations. AsNoTracking() on all reads. IQueryable filter composition before ToListAsync().</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+        <div class="req-card"><div class="req-id">T-204</div><div class="req-text"><strong>Database</strong> — SQL Server LocalDB for PoC. Connection string via appsettings.json. Compatible with Azure SQL for production migration with zero code changes.</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+        <div class="req-card"><div class="req-id">T-205</div><div class="req-text"><strong>DTOs</strong> — C# record types for all API response objects. Manual projection in service layer — no AutoMapper dependency. PagedResult&lt;T&gt; wrapper for all collections.</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+        <div class="req-card"><div class="req-id">T-206</div><div class="req-text"><strong>Seed Data</strong> — HasData() in AppDbContext.OnModelCreating(). Applied via dotnet ef database update. Includes all 10 mills, 8 SKUs, representative shipments and quality test records.</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+      </div>
+    </div>
+
+    <!-- ── 09 DATA ── -->
+    <div class="section fade-in">
+      <div id="data" class="section-anchor"></div>
+      <div class="section-header">
+        <span class="section-num">09</span>
+        <h2 class="section-title">Data Requirements</h2>
+      </div>
+      <div class="section-divider"></div>
+
+      <div class="sub-title">Seed Data Volumes</div>
+      <div class="req-grid">
+        <div class="req-card"><div class="req-id">DR-101</div><div class="req-text"><strong>Mills</strong> — 10 records covering all US facilities. Mix of statuses: 7 Operational, 2 Reduced (Mount Pocono 72%, Modesto 76%), 1 Maintenance (Hastings, 0%).</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+        <div class="req-card"><div class="req-id">DR-102</div><div class="req-text"><strong>Shipments</strong> — Minimum 1,247 records across all mills, all statuses (Scheduled, InTransit, Delivered, Delayed), all grain types, trailing 12 months of departure dates.</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+        <div class="req-card"><div class="req-id">DR-103</div><div class="req-text"><strong>MillAlerts</strong> — At least 10 alert records: 1 critical (Hastings offline), 2 warnings (Mount Pocono capacity, QC issues), remainder informational.</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+        <div class="req-card"><div class="req-id">DR-104</div><div class="req-text"><strong>QualityTests</strong> — Minimum 4,218 records. 96.4% pass rate = ~152 failures. Failures must include specific cases: moisture >14% (Mount Pocono), falling number &lt;300 (Hopkinsville sprout damage), borderline protein (Modesto).</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+      </div>
+
+      <div class="sub-title">Quality Specification Thresholds</div>
+      <div class="req-grid">
+        <div class="req-card"><div class="req-id">DR-201</div><div class="req-text"><strong>Protein %</strong> — Pass: ≥ 11.0% · Warn: 10.5–10.9% · Fail: &lt; 10.5%</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+        <div class="req-card"><div class="req-id">DR-202</div><div class="req-text"><strong>Moisture %</strong> — Pass: ≤ 14.0% · Warn: 14.0–14.4% · Fail: &gt; 14.4%</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+        <div class="req-card"><div class="req-id">DR-203</div><div class="req-text"><strong>Ash %</strong> — Pass: ≤ 0.48% · Warn: 0.48–0.52% · Fail: &gt; 0.52%</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+        <div class="req-card"><div class="req-id">DR-204</div><div class="req-text"><strong>Falling Number</strong> — Pass: ≥ 300 · Warn: 270–299 · Fail: &lt; 270. Low values indicate sprout damage in wheat.</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+      </div>
+    </div>
+
+    <!-- ── 10 UI/UX ── -->
+    <div class="section fade-in">
+      <div id="uiux" class="section-anchor"></div>
+      <div class="section-header">
+        <span class="section-num">10</span>
+        <h2 class="section-title">UI/UX Requirements</h2>
+      </div>
+      <div class="section-divider"></div>
+
+      <div class="sub-title">Brand Tokens</div>
+      <div class="req-grid">
+        <div class="req-card"><div class="req-id">UX-101</div><div class="req-text"><strong>Primary brand color</strong> — Wheat Gold <code style="font-family:'Roboto Mono',monospace;color:var(--gold)">#D4A017</code>. Used for active nav items, primary buttons, and key data highlights.</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+        <div class="req-card"><div class="req-id">UX-102</div><div class="req-text"><strong>Secondary brand color</strong> — Grain Brown <code style="font-family:'Roboto Mono',monospace;color:#a06c3a">#6B4423</code>. Used for sidenav background and secondary accents.</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+        <div class="req-card"><div class="req-id">UX-103</div><div class="req-text"><strong>Status colors</strong> — Operational: #2E7D32 (green) · Reduced: #F57F17 (amber) · Maintenance: #6A1B9A (purple) · Offline: #C62828 (red). Consistent across all status badges.</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+        <div class="req-card"><div class="req-id">UX-104</div><div class="req-text"><strong>Typography</strong> — Google Fonts: Roboto (body, labels) + Roboto Mono (IDs, codes, numbers). Applied via Angular Material theme configuration.</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+      </div>
+
+      <div class="sub-title">Layout &amp; Interaction</div>
+      <div class="req-grid">
+        <div class="req-card"><div class="req-id">UX-201</div><div class="req-text"><strong>Card radius</strong> — All cards and panels use 12px border-radius (M3 spec). Chips use 8px. Input fields use 4px.</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+        <div class="req-card"><div class="req-id">UX-202</div><div class="req-text"><strong>Loading pattern</strong> — Skeleton placeholder cards (pulsing grey rectangles) shown during data fetch — never an empty table flash. Real data fades in smoothly.</div><div class="req-badges"><span class="badge badge-should">SHOULD</span></div></div>
+        <div class="req-card"><div class="req-id">UX-203</div><div class="req-text"><strong>Active nav state</strong> — Active sidenav item: background Wheat Gold light (#FFF8E1), left border 3px solid Wheat Gold, text Grain Brown. Inactive: transparent background, muted text.</div><div class="req-badges"><span class="badge badge-must">MUST</span></div></div>
+        <div class="req-card"><div class="req-id">UX-204</div><div class="req-text"><strong>Empty states</strong> — When a filter returns no results, show an empty state illustration (SVG) with clear messaging ("No shipments match your filters") and a reset button.</div><div class="req-badges"><span class="badge badge-should">SHOULD</span></div></div>
+        <div class="req-card"><div class="req-id">UX-205</div><div class="req-text"><strong>Density</strong> — Default Material density (0). Tables use compact density (-1) to show more rows without scrolling. KPI cards use comfortable density.</div><div class="req-badges"><span class="badge badge-should">SHOULD</span></div></div>
+      </div>
+    </div>
+
+    <!-- ── 11 TIMELINE ── -->
+    <div class="section fade-in">
+      <div id="timeline" class="section-anchor"></div>
+      <div class="section-header">
+        <span class="section-num">11</span>
+        <h2 class="section-title">Timeline &amp; Milestones</h2>
+      </div>
+      <div class="section-divider"></div>
+      <p>The PoC is structured as a 4-week delivery. All milestones target a single developer working full-time.</p>
+
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-dot done" style="--c: var(--green)"></div>
+          <div class="tl-milestone" style="color: var(--green)">Week 0 · Pre-work</div>
+          <div class="tl-title">Requirements, Design &amp; Architecture</div>
+          <div class="tl-desc">Write PRD, create 6-page UI mockup set, produce 7 interactive architecture documents. Establish Angular 22 workspace with CLI, install Material M3, configure EF Core project. Confirm seed data schema with stakeholders.</div>
+          <div class="tl-deliverables">
+            <span class="tl-chip">PRD ✓</span>
+            <span class="tl-chip">Mockups ✓</span>
+            <span class="tl-chip">Architecture docs ✓</span>
+            <span class="tl-chip">GitHub repo ✓</span>
+          </div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-dot" style="--c: var(--gold)"></div>
+          <div class="tl-milestone" style="color: var(--gold)">Week 1 · Foundation</div>
+          <div class="tl-title">Backend API + Database + App Shell</div>
+          <div class="tl-desc">Build ASP.NET Core project: controllers, service interfaces, EF Core DbContext, migrations, and HasData() seed. Wire up CORS, auth middleware, and Swagger. On the Angular side: app shell (sidenav + topbar), routing config, 3 interceptors, and signal store scaffolding.</div>
+          <div class="tl-deliverables">
+            <span class="tl-chip">GET /api/shipments</span>
+            <span class="tl-chip">GET /api/mills</span>
+            <span class="tl-chip">GET /api/quality-tests</span>
+            <span class="tl-chip">App shell</span>
+            <span class="tl-chip">Interceptors</span>
+          </div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-dot" style="--c: var(--blue)"></div>
+          <div class="tl-milestone" style="color: var(--blue)">Week 2 · Core Features</div>
+          <div class="tl-title">Dashboard + Shipments Module</div>
+          <div class="tl-desc">Implement Dashboard page with 4 KPI cards, Chart.js trend line, Chart.js doughnut, and alert strip. Implement Shipments list with filter form, MatTable, MatPaginator, MatSort, and Shipment Detail page with status timeline via httpResource.</div>
+          <div class="tl-deliverables">
+            <span class="tl-chip">Dashboard</span>
+            <span class="tl-chip">Shipments list</span>
+            <span class="tl-chip">Shipment detail</span>
+            <span class="tl-chip">Charts</span>
+          </div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-dot" style="--c: var(--orange)"></div>
+          <div class="tl-milestone" style="color: var(--orange)">Week 3 · Remaining Features</div>
+          <div class="tl-title">Mills Module + Quality Module</div>
+          <div class="tl-desc">Implement Mills grid with chip status filters and fleet stats bar. Implement Mill Detail page with 7-day bar chart, alert list, and QC summary. Implement Quality Tests table with failures toggle, spec dot indicators, and grade color coding.</div>
+          <div class="tl-deliverables">
+            <span class="tl-chip">Mills grid</span>
+            <span class="tl-chip">Mill detail</span>
+            <span class="tl-chip">Quality table</span>
+            <span class="tl-chip">Failures toggle</span>
+          </div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-dot" style="--c: var(--purple)"></div>
+          <div class="tl-milestone" style="color: var(--purple)">Week 4 · Polish &amp; Demo</div>
+          <div class="tl-title">QA, Accessibility, Performance &amp; Demo Prep</div>
+          <div class="tl-desc">Cross-browser testing (Chrome, Edge, Firefox, Safari). Lighthouse performance audit targeting ≥90 score. WCAG 2.1 AA keyboard navigation check. Responsive layout verification at 1024px and 1920px. Demo environment setup and stakeholder walkthrough.</div>
+          <div class="tl-deliverables">
+            <span class="tl-chip">Lighthouse ≥90</span>
+            <span class="tl-chip">WCAG AA</span>
+            <span class="tl-chip">Cross-browser</span>
+            <span class="tl-chip">Demo ready</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 12 RISKS ── -->
+    <div class="section fade-in">
+      <div id="risks" class="section-anchor"></div>
+      <div class="section-header">
+        <span class="section-num">12</span>
+        <h2 class="section-title">Risks &amp; Mitigations</h2>
+      </div>
+      <div class="section-divider"></div>
+
+      <table class="risk-table">
+        <thead>
+          <tr><th>Risk</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-size:13px;color:var(--text);font-weight:500">ng2-charts v7 incompatibility with Angular 22</td>
+            <td><span class="risk-low">LOW</span></td>
+            <td><span class="risk-high">HIGH</span></td>
+            <td style="font-size:12px;color:var(--text-muted)">Verified: ng2-charts v7 supports Angular 22 (uses Chart.js 4 natively). Fallback: drop to pure Chart.js canvas with manual integration.</td>
+          </tr>
+          <tr>
+            <td style="font-size:13px;color:var(--text);font-weight:500">Seed data generation performance</td>
+            <td><span class="risk-med">MED</span></td>
+            <td><span class="risk-med">MED</span></td>
+            <td style="font-size:12px;color:var(--text-muted)">Use HasData() for static reference data only. Generate bulk Shipments/QualityTests via a dedicated DataSeeder service that runs once on first startup rather than migration.</td>
+          </tr>
+          <tr>
+            <td style="font-size:13px;color:var(--text);font-weight:500">Signal Store learning curve (new API)</td>
+            <td><span class="risk-med">MED</span></td>
+            <td><span class="risk-low">LOW</span></td>
+            <td style="font-size:12px;color:var(--text-muted)">Architecture documents provide detailed code patterns. Start with ShipmentsStore as the reference implementation before copying the pattern to other stores.</td>
+          </tr>
+          <tr>
+            <td style="font-size:13px;color:var(--text);font-weight:500">ExpressionChangedAfterChecked errors from loading state</td>
+            <td><span class="risk-high">HIGH</span></td>
+            <td><span class="risk-med">MED</span></td>
+            <td style="font-size:12px;color:var(--text-muted)">Resolved by design: loadingInterceptor wraps signal writes in queueMicrotask() to defer past the current change detection cycle.</td>
+          </tr>
+          <tr>
+            <td style="font-size:13px;color:var(--text);font-weight:500">Scope creep (stakeholders request write features)</td>
+            <td><span class="risk-high">HIGH</span></td>
+            <td><span class="risk-high">HIGH</span></td>
+            <td style="font-size:12px;color:var(--text-muted)">Explicit out-of-scope list in this PRD. Redirect any write-operation requests to the Phase 2 backlog. PoC is read-only by design.</td>
+          </tr>
+          <tr>
+            <td style="font-size:13px;color:var(--text);font-weight:500">SQL Server LocalDB not available on developer machines</td>
+            <td><span class="risk-low">LOW</span></td>
+            <td><span class="risk-med">MED</span></td>
+            <td style="font-size:12px;color:var(--text-muted)">LocalDB ships with Visual Studio 2022. Fallback: Docker image mcr.microsoft.com/mssql/server:2022-latest with identical EF Core config.</td>
+          </tr>
+          <tr>
+            <td style="font-size:13px;color:var(--text);font-weight:500">Material M3 theme token conflicts with brand colors</td>
+            <td><span class="risk-med">MED</span></td>
+            <td><span class="risk-low">LOW</span></td>
+            <td style="font-size:12px;color:var(--text-muted)">Brand color tokens defined as CSS custom properties at :root level — override M3 tokens where necessary without modifying M3 internals.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── 13 ASSUMPTIONS ── -->
+    <div class="section fade-in">
+      <div id="assumptions" class="section-anchor"></div>
+      <div class="section-header">
+        <span class="section-num">13</span>
+        <h2 class="section-title">Assumptions &amp; Constraints</h2>
+      </div>
+      <div class="section-divider"></div>
+
+      <div class="sub-title">Assumptions</div>
+      <ul class="prose">
+        <li><strong>Single developer</strong> builds the full PoC. Timeline assumes 40 hours/week dedicated capacity.</li>
+        <li><strong>Seed data is representative</strong> — the 10 mill names, KPI values (1,247 shipments, 96.4% quality score, 92.7% on-time), and quality spec thresholds have been confirmed with the operations team.</li>
+        <li><strong>Read-only for PoC</strong> — stakeholders accept that the PoC cannot create, update, or delete records. All data mutations happen outside the dashboard during Phase 1.</li>
+        <li><strong>Local development only</strong> — the PoC runs on localhost with SQL Server LocalDB. No cloud infrastructure is provisioned in Phase 1.</li>
+        <li><strong>Demo token acceptable</strong> — a static Bearer token is sufficient for the PoC demonstration. Real Azure AD / Okta integration deferred to Phase 2.</li>
+        <li><strong>No real carrier data</strong> — shipment status (InTransit, Delayed, etc.) and ETA dates are seeded statically. Live carrier API webhooks are Phase 2 scope.</li>
+        <li><strong>English only</strong> — no i18n/l10n requirements for Phase 1.</li>
+      </ul>
+
+      <div class="sub-title">Constraints</div>
+      <ul class="prose">
+        <li><strong>Budget constraint</strong> — No paid UI component libraries. Angular Material M3 is the only component framework (MIT licensed, free).</li>
+        <li><strong>Technology constraint</strong> — Stack is fixed: Angular 22 + Angular Material + ng2-charts on the frontend; ASP.NET Core 9 + EF Core 9 + SQL Server on the backend. No substitutions.</li>
+        <li><strong>No external CDNs in production</strong> — all assets must be bundled. Google Fonts acceptable for PoC/demo environment.</li>
+        <li><strong>Node.js LTS required</strong> — Angular 22 CLI requires Node.js 20 LTS or 22 LTS.</li>
+      </ul>
+    </div>
+
+    <!-- ── 14 OPEN QUESTIONS ── -->
+    <div class="section fade-in">
+      <div id="openqs" class="section-anchor"></div>
+      <div class="section-header">
+        <span class="section-num">14</span>
+        <h2 class="section-title">Open Questions</h2>
+      </div>
+      <div class="section-divider"></div>
+
+      <div class="oq-list">
+        <div class="oq-item">
+          <div class="oq-num">OQ-01</div>
+          <div>
+            <div class="oq-q">What is the correct quality spec threshold for Dockage % in wheat?</div>
+            <div class="oq-context">The mockup shows a Dockage% column in the quality table but no spec threshold has been confirmed by the QA team. Currently displayed as a raw number. Needed to implement the spec dot indicator for this field.</div>
+          </div>
+        </div>
+        <div class="oq-item">
+          <div class="oq-num">OQ-02</div>
+          <div>
+            <div class="oq-q">Should the "Failures Only" toggle also filter the 5 Quality KPI mini-cards, or only the table?</div>
+            <div class="oq-context">Current mockup shows the KPI strip (Total Tests: 4,218, Pass Rate: 96.4%) is static regardless of the toggle. It may be more useful to recompute these to match the current filter state.</div>
+          </div>
+        </div>
+        <div class="oq-item">
+          <div class="oq-num">OQ-03</div>
+          <div>
+            <div class="oq-q">What defines a "delayed" shipment — is it ETA exceeded, or carrier-reported delay event?</div>
+            <div class="oq-context">For the PoC, Status = Delayed is a static field on the Shipment entity. In production this may be a computed state derived from comparing current timestamp vs. ETA. Needs a business rule definition for Phase 2.</div>
+          </div>
+        </div>
+        <div class="oq-item">
+          <div class="oq-num">OQ-04</div>
+          <div>
+            <div class="oq-q">Should mill utilization % on the card be DailyOutput / CapacityTonsDay, or a rolling 7-day average?</div>
+            <div class="oq-context">Real-time utilization (today's output / max capacity) vs. a 7-day rolling average would give different readings. Current implementation uses same-day snapshot. Needs confirmation from operations team for accuracy requirements.</div>
+          </div>
+        </div>
+        <div class="oq-item">
+          <div class="oq-num">OQ-05</div>
+          <div>
+            <div class="oq-q">Who has authority to resolve a MillAlert, and should that action be available in Phase 1?</div>
+            <div class="oq-context">Currently alerts are read-only. The mockup shows resolved alerts in a "Resolved alerts history" section — but there is no write path to resolve them in Phase 1. Confirm whether a simple "Mark resolved" button should be added to scope.</div>
+          </div>
+        </div>
+        <div class="oq-item">
+          <div class="oq-num">OQ-06</div>
+          <div>
+            <div class="oq-q">What is the production hosting plan — Azure App Service, IIS, or containerized (Docker)?</div>
+            <div class="oq-context">The PoC runs locally. Phase 2 deployment target affects several infrastructure choices: whether to use Azure SQL vs. self-hosted SQL Server, whether to containerize the .NET API, and how Angular production builds are served (CDN vs. static web app).</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout" style="--c: var(--blue); margin-top: 24px">
+        <div class="callout-label">Document Revision History</div>
+        <p><strong>v1.0.0 — 2026-06-19</strong> — Initial PoC PRD. All sections authored from scratch aligned with plan.md seed data, mockup designs, and architecture documentation.</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ── Sidebar active tracking ──
+const sections = ['overview','context','goals','personas','scope','functional','stories','nonfunctional','technical','data','uiux','timeline','risks','assumptions','openqs'];
+const sidebarLinks = document.querySelectorAll('.sb-link');
+
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.id;
+      sidebarLinks.forEach(l => {
+        l.classList.toggle('active', l.getAttribute('onclick')?.includes(`'${id}'`));
+      });
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+sections.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) io.observe(el);
+});
+
+// ── User story toggle ──
+function toggleStory(header) {
+  const body = header.nextElementSibling;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  header.classList.toggle('open', !isOpen);
+}
+
+// ── Fade-in observer ──
+const fadeObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in-view'); fadeObs.unobserve(e.target); } });
+}, { threshold: 0.04 });
+document.querySelectorAll('.fade-in').forEach(el => fadeObs.observe(el));
+
+// ── Keyboard: expand first story on Enter ──
+document.querySelectorAll('.story-header').forEach(h => {
+  h.setAttribute('tabindex', '0');
+  h.addEventListener('keydown', e => { if (e.key === 'Enter') toggleStory(h); });
+});
+</script>
+</body>
+</html>
