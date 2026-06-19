@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mills | Ardent Mills</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+<style>
+:root {
+  --am-gold:#D4A017;--am-gold-light:#FEF3C7;--am-grain:#6B4423;--am-grain-dark:#3D200E;
+  --surface:#FFFBFE;--surface-2:#F7F2FA;--on-surface:#1C1B1F;--on-surface-v:#49454F;--outline:#CAC4D0;
+  --op:#2e7d32;--op-bg:#E8F5E9;--rd:#f57f17;--rd-bg:#FFF3E0;
+  --mn:#e65100;--mn-bg:#FBE9E7;--off:#c62828;--off-bg:#FFEBEE;
+  --r:12px;--r-sm:8px;--nav-w:260px;--top-h:64px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Roboto',sans-serif;background:#F4EFF4;color:var(--on-surface);display:flex;height:100vh;overflow:hidden;}
+.mat-icon{font-family:'Material Symbols Outlined';font-size:22px;line-height:1;vertical-align:middle;font-style:normal;}
+
+.sidenav{width:var(--nav-w);flex-shrink:0;background:var(--am-grain-dark);display:flex;flex-direction:column;height:100vh;overflow-y:auto;}
+.sidenav-logo{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.1);}
+.logo-wheat{width:36px;height:36px;background:var(--am-gold);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.logo-wheat .mat-icon{font-size:20px;color:var(--am-grain-dark);}
+.logo-text{color:#fff;font-size:18px;font-weight:700;}
+.logo-sub{color:rgba(255,255,255,0.55);font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.nav-section-label{color:rgba(255,255,255,0.4);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;padding:20px 20px 6px;}
+.nav-item{display:flex;align-items:center;gap:14px;padding:12px 20px;cursor:pointer;color:rgba(255,255,255,0.75);font-size:14px;border-left:3px solid transparent;text-decoration:none;transition:background 0.15s;}
+.nav-item:hover{background:rgba(255,255,255,0.07);}
+.nav-item.active{background:rgba(212,160,23,0.18);color:var(--am-gold);border-left-color:var(--am-gold);font-weight:500;}
+.nav-item .mat-icon{font-size:20px;}
+.nav-badge-red{margin-left:auto;background:var(--off);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;}
+.sidenav-footer{margin-top:auto;padding:16px 20px;border-top:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;gap:12px;}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--am-gold);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--am-grain-dark);}
+
+.main-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:var(--top-h);background:var(--surface);flex-shrink:0;display:flex;align-items:center;padding:0 24px;border-bottom:1px solid var(--outline);gap:16px;}
+.topbar-title{font-size:20px;font-weight:500;color:var(--am-grain);flex:1;}
+.topbar-btn{width:40px;height:40px;border-radius:50%;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--on-surface-v);}
+.topbar-btn:hover{background:var(--surface-2);}
+.content{flex:1;overflow-y:auto;padding:28px 32px;}
+
+.breadcrumb{display:flex;align-items:center;gap:6px;color:var(--on-surface-v);font-size:12px;margin-bottom:16px;}
+.breadcrumb a{color:var(--on-surface-v);text-decoration:none;}
+.breadcrumb .sep{color:var(--outline);}
+
+.page-header{margin-bottom:24px;}
+.page-header h1{font-size:24px;font-weight:500;}
+.page-header p{color:var(--on-surface-v);font-size:14px;margin-top:4px;}
+
+/* Filter chips */
+.chip-filter-row{display:flex;align-items:center;gap:10px;margin-bottom:24px;flex-wrap:wrap;}
+.chip-filter-label{font-size:12px;color:var(--on-surface-v);font-weight:500;text-transform:uppercase;letter-spacing:0.5px;margin-right:4px;}
+.chip-filter{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid var(--outline);background:var(--surface);color:var(--on-surface-v);transition:all 0.15s;text-decoration:none;}
+.chip-filter:hover{background:var(--surface-2);}
+.chip-filter.selected{border-color:var(--am-gold);background:var(--am-gold-light);color:var(--am-grain);}
+.chip-filter .dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+.chip-filter-count{font-size:11px;background:rgba(0,0,0,0.08);border-radius:10px;padding:1px 6px;margin-left:2px;}
+
+/* Stats bar */
+.stats-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px;}
+.stat-pill{background:var(--surface);border-radius:var(--r-sm);padding:12px 16px;box-shadow:0 1px 3px rgba(0,0,0,0.07);text-align:center;}
+.stat-pill .val{font-size:22px;font-weight:500;line-height:1.2;}
+.stat-pill .lbl{font-size:11px;color:var(--on-surface-v);margin-top:3px;}
+
+/* Mill grid */
+.mills-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+.mill-card{background:var(--surface);border-radius:var(--r);box-shadow:0 1px 3px rgba(0,0,0,0.08);overflow:hidden;cursor:pointer;transition:box-shadow 0.2s,transform 0.15s;border:1.5px solid transparent;}
+.mill-card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.12);transform:translateY(-2px);border-color:var(--am-gold);}
+.mill-card-header{padding:16px 18px 12px;border-bottom:1px solid var(--outline);display:flex;justify-content:space-between;align-items:flex-start;}
+.mill-name{font-size:15px;font-weight:500;margin-bottom:3px;}
+.mill-location{font-size:12px;color:var(--on-surface-v);}
+.mill-status-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;}
+.badge-operational{background:var(--op-bg);color:var(--op);}
+.badge-reduced{background:var(--rd-bg);color:var(--rd);}
+.badge-maintenance{background:var(--mn-bg);color:var(--mn);}
+.badge-offline{background:var(--off-bg);color:var(--off);}
+.alert-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--off-bg);color:var(--off);}
+.warn-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--rd-bg);color:var(--rd);}
+.info-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:#E3F2FD;color:#1565c0;}
+
+.mill-card-body{padding:14px 18px 16px;}
+.mill-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.mill-stat .lbl{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--on-surface-v);font-weight:500;}
+.mill-stat .val{font-size:18px;font-weight:500;margin-top:2px;}
+.mill-stat .unit{font-size:12px;color:var(--on-surface-v);font-weight:400;}
+
+/* Progress bar */
+.prog-wrap{margin-top:6px;}
+.prog-label{display:flex;justify-content:space-between;font-size:11px;color:var(--on-surface-v);margin-bottom:5px;}
+.prog-bar{height:6px;background:var(--outline);border-radius:10px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:10px;transition:width 0.4s;}
+.prog-fill.high{background:var(--op);}
+.prog-fill.medium{background:var(--rd);}
+.prog-fill.low{background:var(--off);}
+
+.mill-card-footer{padding:10px 18px;border-top:1px solid var(--outline);display:flex;justify-content:space-between;align-items:center;}
+.footer-link{font-size:12px;color:var(--am-grain);font-weight:500;text-decoration:none;display:flex;align-items:center;gap:4px;}
+.footer-link:hover{text-decoration:underline;}
+.inspection-date{font-size:11px;color:var(--on-surface-v);}
+</style>
+</head>
+<body>
+
+<nav class="sidenav">
+  <div class="sidenav-logo">
+    <div class="logo-wheat"><span class="mat-icon">grain</span></div>
+    <div class="logo-text">Ardent Mills</div>
+    <div class="logo-sub">Supply Chain Dashboard</div>
+  </div>
+  <div class="nav-section-label">Navigation</div>
+  <a class="nav-item" href="01-dashboard.html"><span class="mat-icon">dashboard</span> Dashboard</a>
+  <a class="nav-item" href="02-shipments-list.html"><span class="mat-icon">local_shipping</span> Shipments</a>
+  <a class="nav-item active" href="04-mills-grid.html"><span class="mat-icon">factory</span> Mills <span class="nav-badge-red">1</span></a>
+  <a class="nav-item" href="06-quality-list.html"><span class="mat-icon">science</span> Quality Control</a>
+  <div class="nav-section-label" style="margin-top:12px;">System</div>
+  <a class="nav-item" href="#"><span class="mat-icon">bar_chart</span> Reports <span style="margin-left:auto;font-size:10px;color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;">Soon</span></a>
+  <a class="nav-item" href="#"><span class="mat-icon">settings</span> Settings</a>
+  <div class="sidenav-footer">
+    <div class="avatar">JM</div>
+    <div><div style="color:rgba(255,255,255,0.85);font-size:13px;font-weight:500;">Jane McAllister</div><div style="color:rgba(255,255,255,0.4);font-size:11px;">Supply Chain Director</div></div>
+  </div>
+</nav>
+
+<div class="main-wrap">
+  <header class="topbar">
+    <button class="topbar-btn"><span class="mat-icon">menu</span></button>
+    <span class="topbar-title">Mills</span>
+    <button class="topbar-btn"><span class="mat-icon">notifications</span></button>
+    <button class="topbar-btn"><span class="mat-icon">help_outline</span></button>
+    <div style="width:1px;height:28px;background:var(--outline);margin:0 4px;"></div>
+    <div style="width:36px;height:36px;border-radius:50%;background:var(--am-gold);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--am-grain-dark);">JM</div>
+  </header>
+
+  <main class="content">
+    <div class="breadcrumb">
+      <span class="mat-icon" style="font-size:14px;">home</span>
+      <span class="sep">/</span>
+      <a href="01-dashboard.html">Dashboard</a>
+      <span class="sep">/</span> Mills
+    </div>
+    <div class="page-header">
+      <h1>Mill Operations</h1>
+      <p>10 mill locations across North America · 9 operational · Last refreshed Jun 19, 2026</p>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="stats-bar">
+      <div class="stat-pill"><div class="val">13,240</div><div class="lbl">Total Capacity (t/day)</div></div>
+      <div class="stat-pill"><div class="val" style="color:var(--op);">11,580</div><div class="lbl">Current Output (t/day)</div></div>
+      <div class="stat-pill"><div class="val" style="color:var(--am-grain);">87.5%</div><div class="lbl">Fleet Efficiency</div></div>
+      <div class="stat-pill"><div class="val">9 / 10</div><div class="lbl">Mills Online</div></div>
+      <div class="stat-pill"><div class="val" style="color:var(--off);">3</div><div class="lbl">Active Alerts</div></div>
+    </div>
+
+    <!-- Filter chips -->
+    <div class="chip-filter-row">
+      <span class="chip-filter-label">Filter by status:</span>
+      <a class="chip-filter selected" href="#">All <span class="chip-filter-count">10</span></a>
+      <a class="chip-filter" href="#"><span class="dot" style="background:var(--op);"></span>Operational <span class="chip-filter-count">7</span></a>
+      <a class="chip-filter" href="#"><span class="dot" style="background:var(--rd);"></span>Reduced Capacity <span class="chip-filter-count">2</span></a>
+      <a class="chip-filter" href="#"><span class="dot" style="background:var(--mn);"></span>Maintenance <span class="chip-filter-count">1</span></a>
+      <a class="chip-filter" href="#"><span class="dot" style="background:var(--off);"></span>Offline <span class="chip-filter-count">0</span></a>
+    </div>
+
+    <!-- Mill cards grid -->
+    <div class="mills-grid">
+
+      <!-- Denver Mill - Operational -->
+      <a href="05-mill-detail.html" style="text-decoration:none;color:inherit;">
+      <div class="mill-card">
+        <div class="mill-card-header">
+          <div><div class="mill-name">Denver Mill</div><div class="mill-location"><span class="mat-icon" style="font-size:14px;">location_on</span> Denver, CO</div></div>
+          <div class="mill-status-wrap"><span class="badge badge-operational">Operational</span></div>
+        </div>
+        <div class="mill-card-body">
+          <div class="mill-stats">
+            <div class="mill-stat"><div class="lbl">Capacity</div><div class="val">1,800 <span class="unit">t/day</span></div></div>
+            <div class="mill-stat"><div class="lbl">Output</div><div class="val">1,692 <span class="unit">t/day</span></div></div>
+          </div>
+          <div class="prog-wrap">
+            <div class="prog-label"><span>Utilization</span><span style="font-weight:500;">94%</span></div>
+            <div class="prog-bar"><div class="prog-fill high" style="width:94%;"></div></div>
+          </div>
+        </div>
+        <div class="mill-card-footer">
+          <span class="footer-link">View details <span class="mat-icon" style="font-size:16px;">arrow_forward</span></span>
+          <span class="inspection-date">Inspected Jun 5, 2026</span>
+        </div>
+      </div>
+      </a>
+
+      <!-- Fort Worth Mill - Operational -->
+      <a href="05-mill-detail.html" style="text-decoration:none;color:inherit;">
+      <div class="mill-card">
+        <div class="mill-card-header">
+          <div><div class="mill-name">Fort Worth Mill</div><div class="mill-location"><span class="mat-icon" style="font-size:14px;">location_on</span> Fort Worth, TX</div></div>
+          <div class="mill-status-wrap"><span class="badge badge-operational">Operational</span></div>
+        </div>
+        <div class="mill-card-body">
+          <div class="mill-stats">
+            <div class="mill-stat"><div class="lbl">Capacity</div><div class="val">1,400 <span class="unit">t/day</span></div></div>
+            <div class="mill-stat"><div class="lbl">Output</div><div class="val">1,288 <span class="unit">t/day</span></div></div>
+          </div>
+          <div class="prog-wrap">
+            <div class="prog-label"><span>Utilization</span><span style="font-weight:500;">92%</span></div>
+            <div class="prog-bar"><div class="prog-fill high" style="width:92%;"></div></div>
+          </div>
+        </div>
+        <div class="mill-card-footer">
+          <span class="footer-link">View details <span class="mat-icon" style="font-size:16px;">arrow_forward</span></span>
+          <span class="inspection-date">Inspected May 28, 2026</span>
+        </div>
+      </div>
+      </a>
+
+      <!-- Hopkinsville Mill - Operational -->
+      <a href="05-mill-detail.html" style="text-decoration:none;color:inherit;">
+      <div class="mill-card">
+        <div class="mill-card-header">
+          <div><div class="mill-name">Hopkinsville Mill</div><div class="mill-location"><span class="mat-icon" style="font-size:14px;">location_on</span> Hopkinsville, KY</div></div>
+          <div class="mill-status-wrap"><span class="badge badge-operational">Operational</span></div>
+        </div>
+        <div class="mill-card-body">
+          <div class="mill-stats">
+            <div class="mill-stat"><div class="lbl">Capacity</div><div class="val">1,600 <span class="unit">t/day</span></div></div>
+            <div class="mill-stat"><div class="lbl">Output</div><div class="val">1,488 <span class="unit">t/day</span></div></div>
+          </div>
+          <div class="prog-wrap">
+            <div class="prog-label"><span>Utilization</span><span style="font-weight:500;">93%</span></div>
+            <div class="prog-bar"><div class="prog-fill high" style="width:93%;"></div></div>
+          </div>
+        </div>
+        <div class="mill-card-footer">
+          <span class="footer-link">View details <span class="mat-icon" style="font-size:16px;">arrow_forward</span></span>
+          <span class="inspection-date">Inspected Jun 1, 2026</span>
+        </div>
+      </div>
+      </a>
+
+      <!-- Newton Mill - Operational (largest) -->
+      <a href="05-mill-detail.html" style="text-decoration:none;color:inherit;">
+      <div class="mill-card">
+        <div class="mill-card-header">
+          <div><div class="mill-name">Newton Mill</div><div class="mill-location"><span class="mat-icon" style="font-size:14px;">location_on</span> Newton, KS</div></div>
+          <div class="mill-status-wrap">
+            <span class="badge badge-operational">Operational</span>
+            <span class="info-badge"><span class="mat-icon" style="font-size:12px;">star</span> Flagship</span>
+          </div>
+        </div>
+        <div class="mill-card-body">
+          <div class="mill-stats">
+            <div class="mill-stat"><div class="lbl">Capacity</div><div class="val">2,200 <span class="unit">t/day</span></div></div>
+            <div class="mill-stat"><div class="lbl">Output</div><div class="val">2,090 <span class="unit">t/day</span></div></div>
+          </div>
+          <div class="prog-wrap">
+            <div class="prog-label"><span>Utilization</span><span style="font-weight:500;">95%</span></div>
+            <div class="prog-bar"><div class="prog-fill high" style="width:95%;"></div></div>
+          </div>
+        </div>
+        <div class="mill-card-footer">
+          <span class="footer-link">View details <span class="mat-icon" style="font-size:16px;">arrow_forward</span></span>
+          <span class="inspection-date">Inspected Jun 10, 2026</span>
+        </div>
+      </div>
+      </a>
+
+      <!-- Hastings Mill - Maintenance -->
+      <a href="05-mill-detail.html" style="text-decoration:none;color:inherit;">
+      <div class="mill-card" style="border-color:var(--mn);">
+        <div class="mill-card-header" style="background:#FEF3E2;">
+          <div><div class="mill-name">Hastings Mill</div><div class="mill-location"><span class="mat-icon" style="font-size:14px;">location_on</span> Hastings, NE</div></div>
+          <div class="mill-status-wrap">
+            <span class="badge badge-maintenance">Maintenance</span>
+            <span class="alert-badge"><span class="mat-icon" style="font-size:12px;">warning</span> 2 alerts</span>
+          </div>
+        </div>
+        <div class="mill-card-body">
+          <div class="mill-stats">
+            <div class="mill-stat"><div class="lbl">Capacity</div><div class="val">900 <span class="unit">t/day</span></div></div>
+            <div class="mill-stat"><div class="lbl">Output</div><div class="val" style="color:var(--mn);">0 <span class="unit">t/day</span></div></div>
+          </div>
+          <div class="prog-wrap">
+            <div class="prog-label"><span>Utilization</span><span style="font-weight:500;color:var(--off);">0% — Offline</span></div>
+            <div class="prog-bar"><div class="prog-fill low" style="width:0%;"></div></div>
+          </div>
+          <div style="margin-top:12px;padding:8px 10px;background:var(--mn-bg);border-radius:var(--r-sm);border-left:3px solid var(--mn);font-size:12px;color:var(--mn);">
+            Roller mill #3 bearing replacement — Est. return Jun 24, 2026
+          </div>
+        </div>
+        <div class="mill-card-footer">
+          <span class="footer-link">View details <span class="mat-icon" style="font-size:16px;">arrow_forward</span></span>
+          <span class="inspection-date">Inspected Jun 12, 2026</span>
+        </div>
+      </div>
+      </a>
+
+      <!-- Albany Mill - Operational -->
+      <a href="05-mill-detail.html" style="text-decoration:none;color:inherit;">
+      <div class="mill-card">
+        <div class="mill-card-header">
+          <div><div class="mill-name">Albany Mill</div><div class="mill-location"><span class="mat-icon" style="font-size:14px;">location_on</span> Albany, OR</div></div>
+          <div class="mill-status-wrap"><span class="badge badge-operational">Operational</span></div>
+        </div>
+        <div class="mill-card-body">
+          <div class="mill-stats">
+            <div class="mill-stat"><div class="lbl">Capacity</div><div class="val">1,100 <span class="unit">t/day</span></div></div>
+            <div class="mill-stat"><div class="lbl">Output</div><div class="val">990 <span class="unit">t/day</span></div></div>
+          </div>
+          <div class="prog-wrap">
+            <div class="prog-label"><span>Utilization</span><span style="font-weight:500;">90%</span></div>
+            <div class="prog-bar"><div class="prog-fill high" style="width:90%;"></div></div>
+          </div>
+        </div>
+        <div class="mill-card-footer">
+          <span class="footer-link">View details <span class="mat-icon" style="font-size:16px;">arrow_forward</span></span>
+          <span class="inspection-date">Inspected May 20, 2026</span>
+        </div>
+      </div>
+      </a>
+
+      <!-- Decatur Mill - Operational -->
+      <a href="05-mill-detail.html" style="text-decoration:none;color:inherit;">
+      <div class="mill-card">
+        <div class="mill-card-header">
+          <div><div class="mill-name">Decatur Mill</div><div class="mill-location"><span class="mat-icon" style="font-size:14px;">location_on</span> Decatur, AL</div></div>
+          <div class="mill-status-wrap"><span class="badge badge-operational">Operational</span></div>
+        </div>
+        <div class="mill-card-body">
+          <div class="mill-stats">
+            <div class="mill-stat"><div class="lbl">Capacity</div><div class="val">1,500 <span class="unit">t/day</span></div></div>
+            <div class="mill-stat"><div class="lbl">Output</div><div class="val">1,380 <span class="unit">t/day</span></div></div>
+          </div>
+          <div class="prog-wrap">
+            <div class="prog-label"><span>Utilization</span><span style="font-weight:500;">92%</span></div>
+            <div class="prog-bar"><div class="prog-fill high" style="width:92%;"></div></div>
+          </div>
+        </div>
+        <div class="mill-card-footer">
+          <span class="footer-link">View details <span class="mat-icon" style="font-size:16px;">arrow_forward</span></span>
+          <span class="inspection-date">Inspected Jun 3, 2026</span>
+        </div>
+      </div>
+      </a>
+
+      <!-- Mount Pocono - Reduced Capacity -->
+      <a href="05-mill-detail.html" style="text-decoration:none;color:inherit;">
+      <div class="mill-card" style="border-color:var(--rd);">
+        <div class="mill-card-header" style="background:#FFF9ED;">
+          <div><div class="mill-name">Mount Pocono Mill</div><div class="mill-location"><span class="mat-icon" style="font-size:14px;">location_on</span> Mount Pocono, PA</div></div>
+          <div class="mill-status-wrap">
+            <span class="badge badge-reduced">Reduced Capacity</span>
+            <span class="warn-badge"><span class="mat-icon" style="font-size:12px;">warning</span> 1 alert</span>
+          </div>
+        </div>
+        <div class="mill-card-body">
+          <div class="mill-stats">
+            <div class="mill-stat"><div class="lbl">Capacity</div><div class="val">1,000 <span class="unit">t/day</span></div></div>
+            <div class="mill-stat"><div class="lbl">Output</div><div class="val" style="color:var(--rd);">720 <span class="unit">t/day</span></div></div>
+          </div>
+          <div class="prog-wrap">
+            <div class="prog-label"><span>Utilization</span><span style="font-weight:500;color:var(--rd);">72%</span></div>
+            <div class="prog-bar"><div class="prog-fill medium" style="width:72%;"></div></div>
+          </div>
+        </div>
+        <div class="mill-card-footer">
+          <span class="footer-link">View details <span class="mat-icon" style="font-size:16px;">arrow_forward</span></span>
+          <span class="inspection-date">Inspected Jun 8, 2026</span>
+        </div>
+      </div>
+      </a>
+
+      <!-- Charlotte Mill - Operational -->
+      <a href="05-mill-detail.html" style="text-decoration:none;color:inherit;">
+      <div class="mill-card">
+        <div class="mill-card-header">
+          <div><div class="mill-name">Charlotte Mill</div><div class="mill-location"><span class="mat-icon" style="font-size:14px;">location_on</span> Charlotte, NC</div></div>
+          <div class="mill-status-wrap"><span class="badge badge-operational">Operational</span></div>
+        </div>
+        <div class="mill-card-body">
+          <div class="mill-stats">
+            <div class="mill-stat"><div class="lbl">Capacity</div><div class="val">1,300 <span class="unit">t/day</span></div></div>
+            <div class="mill-stat"><div class="lbl">Output</div><div class="val">1,196 <span class="unit">t/day</span></div></div>
+          </div>
+          <div class="prog-wrap">
+            <div class="prog-label"><span>Utilization</span><span style="font-weight:500;">92%</span></div>
+            <div class="prog-bar"><div class="prog-fill high" style="width:92%;"></div></div>
+          </div>
+        </div>
+        <div class="mill-card-footer">
+          <span class="footer-link">View details <span class="mat-icon" style="font-size:16px;">arrow_forward</span></span>
+          <span class="inspection-date">Inspected May 30, 2026</span>
+        </div>
+      </div>
+      </a>
+
+      <!-- Modesto Mill - Reduced Capacity -->
+      <a href="05-mill-detail.html" style="text-decoration:none;color:inherit;">
+      <div class="mill-card" style="border-color:var(--rd);">
+        <div class="mill-card-header" style="background:#FFF9ED;">
+          <div><div class="mill-name">Modesto Mill</div><div class="mill-location"><span class="mat-icon" style="font-size:14px;">location_on</span> Modesto, CA</div></div>
+          <div class="mill-status-wrap">
+            <span class="badge badge-reduced">Reduced Capacity</span>
+          </div>
+        </div>
+        <div class="mill-card-body">
+          <div class="mill-stats">
+            <div class="mill-stat"><div class="lbl">Capacity</div><div class="val">1,100 <span class="unit">t/day</span></div></div>
+            <div class="mill-stat"><div class="lbl">Output</div><div class="val" style="color:var(--rd);">836 <span class="unit">t/day</span></div></div>
+          </div>
+          <div class="prog-wrap">
+            <div class="prog-label"><span>Utilization</span><span style="font-weight:500;color:var(--rd);">76%</span></div>
+            <div class="prog-bar"><div class="prog-fill medium" style="width:76%;"></div></div>
+          </div>
+        </div>
+        <div class="mill-card-footer">
+          <span class="footer-link">View details <span class="mat-icon" style="font-size:16px;">arrow_forward</span></span>
+          <span class="inspection-date">Inspected Jun 6, 2026</span>
+        </div>
+      </div>
+      </a>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

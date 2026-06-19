@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shipments | Ardent Mills</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+<style>
+:root {
+  --am-gold:#D4A017; --am-gold-light:#FEF3C7; --am-grain:#6B4423; --am-grain-dark:#3D200E; --am-grain-mid:#8B5E3C;
+  --surface:#FFFBFE; --surface-2:#F7F2FA; --on-surface:#1C1B1F; --on-surface-v:#49454F; --outline:#CAC4D0;
+  --op:#2e7d32; --op-bg:#E8F5E9; --rd:#f57f17; --rd-bg:#FFF3E0;
+  --mn:#e65100; --mn-bg:#FBE9E7; --off:#c62828; --off-bg:#FFEBEE;
+  --it:#1565c0; --it-bg:#E3F2FD; --dl:#c62828; --dl-bg:#FFEBEE; --sc:#6a1b9a; --sc-bg:#F3E5F5;
+  --r:12px; --r-sm:8px; --nav-w:260px; --top-h:64px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Roboto',sans-serif;background:#F4EFF4;color:var(--on-surface);display:flex;height:100vh;overflow:hidden;}
+.mat-icon{font-family:'Material Symbols Outlined';font-size:22px;line-height:1;vertical-align:middle;font-style:normal;}
+
+.sidenav{width:var(--nav-w);flex-shrink:0;background:var(--am-grain-dark);display:flex;flex-direction:column;height:100vh;overflow-y:auto;}
+.sidenav-logo{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.1);}
+.logo-wheat{width:36px;height:36px;background:var(--am-gold);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.logo-wheat .mat-icon{font-size:20px;color:var(--am-grain-dark);}
+.logo-text{color:#fff;font-size:18px;font-weight:700;}
+.logo-sub{color:rgba(255,255,255,0.55);font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.nav-section-label{color:rgba(255,255,255,0.4);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;padding:20px 20px 6px;}
+.nav-item{display:flex;align-items:center;gap:14px;padding:12px 20px;cursor:pointer;color:rgba(255,255,255,0.75);font-size:14px;border-left:3px solid transparent;text-decoration:none;transition:background 0.15s;}
+.nav-item:hover{background:rgba(255,255,255,0.07);}
+.nav-item.active{background:rgba(212,160,23,0.18);color:var(--am-gold);border-left-color:var(--am-gold);font-weight:500;}
+.nav-item .mat-icon{font-size:20px;}
+.nav-badge{margin-left:auto;background:var(--off);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;}
+.sidenav-footer{margin-top:auto;padding:16px 20px;border-top:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;gap:12px;}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--am-gold);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--am-grain-dark);}
+.user-name{color:rgba(255,255,255,0.85);font-size:13px;font-weight:500;}
+.user-role{color:rgba(255,255,255,0.4);font-size:11px;}
+
+.main-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:var(--top-h);background:var(--surface);flex-shrink:0;display:flex;align-items:center;padding:0 24px;border-bottom:1px solid var(--outline);gap:16px;}
+.topbar-title{font-size:20px;font-weight:500;color:var(--am-grain);flex:1;}
+.topbar-btn{width:40px;height:40px;border-radius:50%;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--on-surface-v);}
+.topbar-btn:hover{background:var(--surface-2);}
+.content{flex:1;overflow-y:auto;padding:28px 32px;}
+.page-header{margin-bottom:24px;}
+.page-header h1{font-size:24px;font-weight:500;}
+.page-header p{color:var(--on-surface-v);font-size:14px;margin-top:4px;}
+.breadcrumb{display:flex;align-items:center;gap:6px;color:var(--on-surface-v);font-size:12px;margin-bottom:8px;}
+.breadcrumb .sep{color:var(--outline);}
+
+/* Filter card */
+.filter-card{background:var(--surface);border-radius:var(--r);padding:18px 22px;box-shadow:0 1px 3px rgba(0,0,0,0.08);margin-bottom:20px;}
+.filter-card h3{font-size:13px;font-weight:500;color:var(--on-surface-v);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;}
+.filter-row{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;}
+.form-field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:160px;}
+.form-field label{font-size:11px;font-weight:500;color:var(--on-surface-v);text-transform:uppercase;letter-spacing:0.5px;}
+.form-field input,.form-field select{
+  border:1.5px solid var(--outline);border-radius:var(--r-sm);
+  padding:9px 12px;font-size:14px;font-family:'Roboto',sans-serif;
+  background:var(--surface);color:var(--on-surface);outline:none;
+  transition:border-color 0.15s;
+}
+.form-field input:focus,.form-field select:focus{border-color:var(--am-gold);}
+.form-field select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%2349454F' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px;}
+.btn-clear{padding:9px 18px;background:transparent;border:1.5px solid var(--outline);border-radius:var(--r-sm);font-size:14px;font-weight:500;cursor:pointer;color:var(--on-surface-v);white-space:nowrap;transition:background 0.15s;}
+.btn-clear:hover{background:var(--surface-2);}
+.btn-primary{padding:9px 20px;background:var(--am-gold);border:none;border-radius:var(--r-sm);font-size:14px;font-weight:500;cursor:pointer;color:var(--am-grain-dark);white-space:nowrap;transition:opacity 0.15s;}
+.btn-primary:hover{opacity:0.9;}
+
+/* Table card */
+.table-card{background:var(--surface);border-radius:var(--r);box-shadow:0 1px 3px rgba(0,0,0,0.08);overflow:hidden;}
+.table-toolbar{padding:16px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--outline);}
+.table-toolbar h2{font-size:15px;font-weight:500;}
+.table-toolbar p{font-size:12px;color:var(--on-surface-v);}
+.toolbar-actions{display:flex;gap:8px;}
+.btn-icon{width:36px;height:36px;border-radius:50%;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--on-surface-v);transition:background 0.15s;}
+.btn-icon:hover{background:var(--surface-2);}
+
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{text-align:left;padding:11px 16px;background:var(--surface-2);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;color:var(--on-surface-v);border-bottom:1px solid var(--outline);white-space:nowrap;}
+thead th.sortable{cursor:pointer;}
+thead th.sortable:hover{background:#EDE8F1;}
+thead th .sort-icon{font-size:14px;vertical-align:middle;opacity:0.5;}
+thead th.sorted .sort-icon{opacity:1;color:var(--am-grain);}
+tbody tr{border-bottom:1px solid var(--outline);}
+tbody tr:last-child{border-bottom:none;}
+tbody td{padding:12px 16px;vertical-align:middle;}
+tbody tr:hover td{background:var(--surface-2);}
+.row-link{color:var(--am-grain);font-weight:500;text-decoration:none;font-family:monospace;font-size:12px;}
+.row-link:hover{text-decoration:underline;}
+
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+.badge-in-transit{background:var(--it-bg);color:var(--it);}
+.badge-delivered{background:var(--op-bg);color:var(--op);}
+.badge-delayed{background:var(--dl-bg);color:var(--dl);}
+.badge-scheduled{background:var(--sc-bg);color:var(--sc);}
+
+.mode-rail{background:#E8F5E9;color:#2e7d32;}
+.mode-truck{background:#E3F2FD;color:#1565c0;}
+.mode-intermodal{background:#F3E5F5;color:#6a1b9a;}
+
+/* Paginator */
+.paginator{display:flex;align-items:center;justify-content:space-between;padding:12px 22px;border-top:1px solid var(--outline);}
+.paginator p{font-size:13px;color:var(--on-surface-v);}
+.paginator-controls{display:flex;align-items:center;gap:4px;}
+.page-btn{width:32px;height:32px;border-radius:6px;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:var(--on-surface-v);transition:background 0.15s;}
+.page-btn:hover{background:var(--surface-2);}
+.page-btn.active{background:var(--am-gold-light);color:var(--am-grain);font-weight:700;}
+.page-btn:disabled{opacity:0.35;cursor:default;}
+.per-page-select{border:1.5px solid var(--outline);border-radius:6px;padding:5px 10px;font-size:13px;background:var(--surface);color:var(--on-surface);cursor:pointer;}
+</style>
+</head>
+<body>
+
+<nav class="sidenav">
+  <div class="sidenav-logo">
+    <div class="logo-wheat"><span class="mat-icon">grain</span></div>
+    <div class="logo-text">Ardent Mills</div>
+    <div class="logo-sub">Supply Chain Dashboard</div>
+  </div>
+  <div class="nav-section-label">Navigation</div>
+  <a class="nav-item" href="01-dashboard.html"><span class="mat-icon">dashboard</span> Dashboard</a>
+  <a class="nav-item active" href="02-shipments-list.html"><span class="mat-icon">local_shipping</span> Shipments</a>
+  <a class="nav-item" href="04-mills-grid.html"><span class="mat-icon">factory</span> Mills <span class="nav-badge">1</span></a>
+  <a class="nav-item" href="06-quality-list.html"><span class="mat-icon">science</span> Quality Control</a>
+  <div class="nav-section-label" style="margin-top:12px;">System</div>
+  <a class="nav-item" href="#"><span class="mat-icon">bar_chart</span> Reports <span style="margin-left:auto;font-size:10px;color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;">Soon</span></a>
+  <a class="nav-item" href="#"><span class="mat-icon">settings</span> Settings</a>
+  <div class="sidenav-footer">
+    <div class="avatar">JM</div>
+    <div><div class="user-name">Jane McAllister</div><div class="user-role">Supply Chain Director</div></div>
+  </div>
+</nav>
+
+<div class="main-wrap">
+  <header class="topbar">
+    <button class="topbar-btn"><span class="mat-icon">menu</span></button>
+    <span class="topbar-title">Shipments</span>
+    <button class="topbar-btn"><span class="mat-icon">notifications</span></button>
+    <button class="topbar-btn"><span class="mat-icon">help_outline</span></button>
+    <div style="width:1px;height:28px;background:var(--outline);margin:0 4px;"></div>
+    <div style="width:36px;height:36px;border-radius:50%;background:var(--am-gold);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--am-grain-dark);">JM</div>
+  </header>
+
+  <main class="content">
+    <div class="page-header">
+      <div class="breadcrumb">
+        <span class="mat-icon" style="font-size:14px;">home</span>
+        <span class="sep">/</span>
+        <a href="01-dashboard.html" style="color:var(--on-surface-v);text-decoration:none;">Dashboard</a>
+        <span class="sep">/</span> Shipments
+      </div>
+      <h1>Shipments</h1>
+      <p>1,247 total shipments · Showing 1–10 · Jun 2026</p>
+    </div>
+
+    <!-- Filter card -->
+    <div class="filter-card">
+      <h3>Filters</h3>
+      <div class="filter-row">
+        <div class="form-field">
+          <label>Origin Mill</label>
+          <input type="text" placeholder="Search origin…" value="">
+        </div>
+        <div class="form-field">
+          <label>Destination</label>
+          <input type="text" placeholder="Search destination…" value="">
+        </div>
+        <div class="form-field">
+          <label>Status</label>
+          <select>
+            <option>All Statuses</option>
+            <option selected>All Statuses</option>
+            <option>In Transit</option>
+            <option>Delivered</option>
+            <option>Delayed</option>
+            <option>Scheduled</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Grain Type</label>
+          <select>
+            <option>All Grains</option>
+            <option>Hard Red Winter Wheat</option>
+            <option>Hard Red Spring Wheat</option>
+            <option>Durum Wheat</option>
+            <option>Soft White Wheat</option>
+            <option>Yellow Corn</option>
+            <option>Oats</option>
+            <option>Rye</option>
+          </select>
+        </div>
+        <button class="btn-clear">Clear</button>
+        <button class="btn-primary">Apply</button>
+      </div>
+    </div>
+
+    <!-- Shipments table -->
+    <div class="table-card">
+      <div class="table-toolbar">
+        <div>
+          <h2>All Shipments</h2>
+          <p>Sorted by departure date (newest first)</p>
+        </div>
+        <div class="toolbar-actions">
+          <button class="btn-icon" title="Export CSV"><span class="mat-icon">download</span></button>
+          <button class="btn-icon" title="Columns"><span class="mat-icon">view_column</span></button>
+          <button class="btn-icon" title="Refresh"><span class="mat-icon">refresh</span></button>
+        </div>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th class="sortable sorted">Shipment ID <span class="mat-icon sort-icon">arrow_downward</span></th>
+              <th>Product / SKU</th>
+              <th class="sortable">Origin Mill <span class="mat-icon sort-icon">unfold_more</span></th>
+              <th>Destination</th>
+              <th>Carrier / Mode</th>
+              <th>Qty (lbs)</th>
+              <th class="sortable">Departure <span class="mat-icon sort-icon">unfold_more</span></th>
+              <th class="sortable">ETA <span class="mat-icon sort-icon">unfold_more</span></th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a href="03-shipment-detail.html" class="row-link">SHP-2026-04821</a></td>
+              <td><div style="font-weight:500;font-size:13px;">All-Purpose Flour 50lb</div><div style="font-size:11px;color:var(--on-surface-v);font-family:monospace;">AM-APF-50</div></td>
+              <td>Denver Mill</td>
+              <td><div>Bimbo Bakeries USA</div><div style="font-size:11px;color:var(--on-surface-v);">Dallas, TX</div></td>
+              <td><div>BNSF Railway</div><div><span class="badge mode-rail">Rail</span></div></td>
+              <td>46,200</td>
+              <td>Jun 18, 2026</td>
+              <td>Jun 21, 2026</td>
+              <td><span class="badge badge-in-transit">In Transit</span></td>
+              <td><button class="btn-icon"><span class="mat-icon">open_in_new</span></button></td>
+            </tr>
+            <tr>
+              <td><a href="03-shipment-detail.html" class="row-link">SHP-2026-04820</a></td>
+              <td><div style="font-weight:500;font-size:13px;">Bread Flour 50lb</div><div style="font-size:11px;color:var(--on-surface-v);font-family:monospace;">AM-BRD-50</div></td>
+              <td>Newton Mill</td>
+              <td><div>Flowers Foods</div><div style="font-size:11px;color:var(--on-surface-v);">Atlanta, GA</div></td>
+              <td><div>Schneider National</div><div><span class="badge mode-truck">Truck</span></div></td>
+              <td>24,400</td>
+              <td>Jun 15, 2026</td>
+              <td>Jun 18, 2026</td>
+              <td><span class="badge badge-delivered">Delivered</span></td>
+              <td><button class="btn-icon"><span class="mat-icon">open_in_new</span></button></td>
+            </tr>
+            <tr>
+              <td><a href="03-shipment-detail.html" class="row-link">SHP-2026-04819</a></td>
+              <td><div style="font-weight:500;font-size:13px;">Durum Semolina 50lb</div><div style="font-size:11px;color:var(--on-surface-v);font-family:monospace;">AM-DUR-50</div></td>
+              <td>Fort Worth Mill</td>
+              <td><div>Kraft Heinz</div><div style="font-size:11px;color:var(--on-surface-v);">Chicago, IL</div></td>
+              <td><div>JB Hunt</div><div><span class="badge mode-intermodal">Intermodal</span></div></td>
+              <td>27,000</td>
+              <td>Jun 16, 2026</td>
+              <td>Jun 20, 2026 <span style="color:var(--dl);font-size:11px;">+2d</span></td>
+              <td><span class="badge badge-delayed">Delayed</span></td>
+              <td><button class="btn-icon"><span class="mat-icon">open_in_new</span></button></td>
+            </tr>
+            <tr>
+              <td><a href="03-shipment-detail.html" class="row-link">SHP-2026-04818</a></td>
+              <td><div style="font-weight:500;font-size:13px;">Whole Wheat 25lb</div><div style="font-size:11px;color:var(--on-surface-v);font-family:monospace;">AM-WHL-25</div></td>
+              <td>Albany Mill</td>
+              <td><div>General Mills</div><div style="font-size:11px;color:var(--on-surface-v);">Minneapolis, MN</div></td>
+              <td><div>Werner Enterprises</div><div><span class="badge mode-truck">Truck</span></div></td>
+              <td>22,500</td>
+              <td>Jun 23, 2026</td>
+              <td>Jun 25, 2026</td>
+              <td><span class="badge badge-scheduled">Scheduled</span></td>
+              <td><button class="btn-icon"><span class="mat-icon">open_in_new</span></button></td>
+            </tr>
+            <tr>
+              <td><a href="03-shipment-detail.html" class="row-link">SHP-2026-04817</a></td>
+              <td><div style="font-weight:500;font-size:13px;">Yellow Corn Meal 50lb</div><div style="font-size:11px;color:var(--on-surface-v);font-family:monospace;">AM-CRN-50</div></td>
+              <td>Decatur Mill</td>
+              <td><div>Conagra Brands</div><div style="font-size:11px;color:var(--on-surface-v);">Omaha, NE</div></td>
+              <td><div>Union Pacific</div><div><span class="badge mode-rail">Rail</span></div></td>
+              <td>44,800</td>
+              <td>Jun 17, 2026</td>
+              <td>Jun 22, 2026</td>
+              <td><span class="badge badge-in-transit">In Transit</span></td>
+              <td><button class="btn-icon"><span class="mat-icon">open_in_new</span></button></td>
+            </tr>
+            <tr>
+              <td><a href="03-shipment-detail.html" class="row-link">SHP-2026-04816</a></td>
+              <td><div style="font-weight:500;font-size:13px;">Pastry Flour 25lb</div><div style="font-size:11px;color:var(--on-surface-v);font-family:monospace;">AM-PST-25</div></td>
+              <td>Charlotte Mill</td>
+              <td><div>Hostess Brands</div><div style="font-size:11px;color:var(--on-surface-v);">Kansas City, MO</div></td>
+              <td><div>Schneider National</div><div><span class="badge mode-truck">Truck</span></div></td>
+              <td>23,200</td>
+              <td>Jun 14, 2026</td>
+              <td>Jun 16, 2026</td>
+              <td><span class="badge badge-delivered">Delivered</span></td>
+              <td><button class="btn-icon"><span class="mat-icon">open_in_new</span></button></td>
+            </tr>
+            <tr>
+              <td><a href="03-shipment-detail.html" class="row-link">SHP-2026-04815</a></td>
+              <td><div style="font-weight:500;font-size:13px;">Rolled Oats 25lb</div><div style="font-size:11px;color:var(--on-surface-v);font-family:monospace;">AM-OAT-25</div></td>
+              <td>Hopkinsville Mill</td>
+              <td><div>Quaker Foods</div><div style="font-size:11px;color:var(--on-surface-v);">Chicago, IL</div></td>
+              <td><div>JB Hunt</div><div><span class="badge mode-intermodal">Intermodal</span></div></td>
+              <td>25,600</td>
+              <td>Jun 19, 2026</td>
+              <td>Jun 23, 2026</td>
+              <td><span class="badge badge-scheduled">Scheduled</span></td>
+              <td><button class="btn-icon"><span class="mat-icon">open_in_new</span></button></td>
+            </tr>
+            <tr>
+              <td><a href="03-shipment-detail.html" class="row-link">SHP-2026-04814</a></td>
+              <td><div style="font-weight:500;font-size:13px;">Bread Flour 50lb</div><div style="font-size:11px;color:var(--on-surface-v);font-family:monospace;">AM-BRD-50</div></td>
+              <td>Newton Mill</td>
+              <td><div>Bimbo Bakeries USA</div><div style="font-size:11px;color:var(--on-surface-v);">San Antonio, TX</div></td>
+              <td><div>BNSF Railway</div><div><span class="badge mode-rail">Rail</span></div></td>
+              <td>47,600</td>
+              <td>Jun 12, 2026</td>
+              <td>Jun 15, 2026</td>
+              <td><span class="badge badge-delivered">Delivered</span></td>
+              <td><button class="btn-icon"><span class="mat-icon">open_in_new</span></button></td>
+            </tr>
+            <tr>
+              <td><a href="03-shipment-detail.html" class="row-link">SHP-2026-04813</a></td>
+              <td><div style="font-weight:500;font-size:13px;">All-Purpose Flour 50lb</div><div style="font-size:11px;color:var(--on-surface-v);font-family:monospace;">AM-APF-50</div></td>
+              <td>Fort Worth Mill</td>
+              <td><div>Flowers Foods</div><div style="font-size:11px;color:var(--on-surface-v);">Houston, TX</div></td>
+              <td><div>Werner Enterprises</div><div><span class="badge mode-truck">Truck</span></div></td>
+              <td>23,800</td>
+              <td>Jun 11, 2026</td>
+              <td>Jun 13, 2026 <span style="color:var(--dl);font-size:11px;">+1d</span></td>
+              <td><span class="badge badge-delayed">Delayed</span></td>
+              <td><button class="btn-icon"><span class="mat-icon">open_in_new</span></button></td>
+            </tr>
+            <tr>
+              <td><a href="03-shipment-detail.html" class="row-link">SHP-2026-04812</a></td>
+              <td><div style="font-weight:500;font-size:13px;">Rye Flour 25lb</div><div style="font-size:11px;color:var(--on-surface-v);font-family:monospace;">AM-RYE-25</div></td>
+              <td>Modesto Mill</td>
+              <td><div>General Mills</div><div style="font-size:11px;color:var(--on-surface-v);">Sacramento, CA</div></td>
+              <td><div>Union Pacific</div><div><span class="badge mode-rail">Rail</span></div></td>
+              <td>44,000</td>
+              <td>Jun 10, 2026</td>
+              <td>Jun 14, 2026</td>
+              <td><span class="badge badge-in-transit">In Transit</span></td>
+              <td><button class="btn-icon"><span class="mat-icon">open_in_new</span></button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="paginator">
+        <p>Showing <strong>1–10</strong> of <strong>1,247</strong> shipments</p>
+        <div style="display:flex;align-items:center;gap:20px;">
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--on-surface-v);">
+            Rows per page:
+            <select class="per-page-select">
+              <option>10</option><option>25</option><option>50</option>
+            </select>
+          </div>
+          <div class="paginator-controls">
+            <button class="page-btn" disabled><span class="mat-icon" style="font-size:18px;">first_page</span></button>
+            <button class="page-btn" disabled><span class="mat-icon" style="font-size:18px;">chevron_left</span></button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <span style="font-size:13px;color:var(--on-surface-v);">…</span>
+            <button class="page-btn">125</button>
+            <button class="page-btn"><span class="mat-icon" style="font-size:18px;">chevron_right</span></button>
+            <button class="page-btn"><span class="mat-icon" style="font-size:18px;">last_page</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,40 @@
+/* Shared design tokens — included inline in each mockup */
+:root {
+  --am-brand-gold:         #D4A017;
+  --am-brand-grain:        #6B4423;
+  --am-brand-gold-light:   #F5E6B0;
+  --am-brand-grain-light:  #EDD9C8;
+
+  --am-status-operational: #2e7d32;
+  --am-status-reduced:     #f57f17;
+  --am-status-maintenance: #e65100;
+  --am-status-offline:     #c62828;
+  --am-status-delivered:   #2e7d32;
+  --am-status-in-transit:  #1565c0;
+  --am-status-delayed:     #c62828;
+  --am-status-scheduled:   #6a1b9a;
+  --am-pass:               #2e7d32;
+  --am-fail:               #c62828;
+  --am-warn:               #f57f17;
+
+  --surface:       #FFFBFE;
+  --surface-variant: #F3EDF7;
+  --on-surface:    #1C1B1F;
+  --on-surface-variant: #49454F;
+  --outline:       #79747E;
+  --outline-variant: #CAC4D0;
+  --primary:       #6650A4;
+  --on-primary:    #FFFFFF;
+  --secondary:     #625B71;
+  --tertiary:      #7D5260;
+  --error:         #B3261E;
+
+  --sidenav-width: 256px;
+  --topbar-height: 64px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --shadow-1: 0 1px 2px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.06);
+  --shadow-2: 0 2px 4px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-3: 0 4px 8px rgba(0,0,0,0.10), 0 8px 24px rgba(0,0,0,0.10);
+}
